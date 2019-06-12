@@ -1,4 +1,4 @@
-= rfc2md
+= rfc2mnadoc
 
 XSLT conversion from RFC XML v2 to Metanorma Asciidoctor
 

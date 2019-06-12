@@ -1,0 +1,25 @@
+= rfc2md
+
+XSLT conversion from RFC XML v2 to Metanorma Asciidoctor
+
+= Usage
+
+To run the transformation:
+
+[source,sh]
+----
+setenv SGML_CATALOG_FILES $HOME/rfc2mnadoc/external/sgml_catalogue_files.xml
+----
+
+If run with `--stringparam draft "final"`, leave out `crefs`.
+
+[source,sh]
+----
+xsltproc --catalogs  rfc2mnadoc.xslt rfcV2.xml
+xsltproc --stringparam draft "final" --catalogs  rfc2mnadoc.xslt rfcV2.xml
+----
+
+= Status 
+
+Based on https://github.com/metanorma/rfc2md[rfc2md]. Experimental code.
+

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE catalog
+   PUBLIC "-//OASIS/DTD Entity Resolution XML Catalog V1.0//EN"
+   "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd"> 
+<catalog  xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">  
+	<group  prefer="public"  xml:base="file:///Users/nickn/Documents/Arbeit/upwork/ribose/rfc2md/external/">
+	  <!--
+    <public 
+       publicId="-//OASIS//DTD DocBook XML V4.5//EN"  4
+       uri="docbook45/docbookx.dtd"/>
+-->
+
+    <system
+	    systemId="http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"  
+       uri="reference.RFC.2119.xml"/>
+
+    <system systemId="rfc2629.dtd"    uri="rfc2629.dtd"/>
+    <system systemId="rfc2629-xhtml.ent"    uri="rfc2629-xhtml.ent"/>
+    <system systemId="rfc2629-other.ent"    uri="rfc2629-other.ent"/>
+  </group>
+</catalog>
+

@@ -13,9 +13,9 @@
         <xsl:param name="nodes" />
         
         <xsl:for-each select="$nodes">
-            <xsl:text>"</xsl:text>
+            <!--<xsl:text>"</xsl:text>-->
             <xsl:value-of select="normalize-space(.)" />
-            <xsl:text>"</xsl:text>
+            <!--<xsl:text>"</xsl:text>-->
             <xsl:if test="position() != last()">, </xsl:if>
         </xsl:for-each>
     </xsl:template>
@@ -41,8 +41,15 @@
     
     <xsl:template name="make-list-item">
         <xsl:param name="indent-level" />
-        <xsl:param name="counter-style" />
         <xsl:param name="item-number" />
+        <xsl:param name="numbered" />
+
+        <xsl:variable name="prefix">
+          <xsl:choose>
+            <xsl:when test="$numbered"><xsl:text>.</xsl:text></xsl:when>
+            <xsl:otherwise><xsl:text>*</xsl:text></xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
         
         <!-- start of nested list: insert line -->
         <xsl:choose>
@@ -50,13 +57,8 @@
             <xsl:text>&#xa;</xsl:text>
           </xsl:when>
         </xsl:choose>
-
-        <xsl:value-of select="str:padding(($indent-level - 1) * 4, ' ')" />
-        
-        <xsl:call-template name="make-counter">
-            <xsl:with-param name="style" select="$counter-style" />
-            <xsl:with-param name="position" select="$item-number" />
-        </xsl:call-template>
+        <xsl:value-of select="str:padding(($indent-level) , $prefix)" />
+        <xsl:text> </xsl:text>       
         
     </xsl:template>
 
@@ -130,7 +132,7 @@
         <xsl:param name="n"/>
         <!-- TODO: remove and just call str:padding directly -->
         <!-- NOTE: these are standard markdown compatible, two spaces followed by newline -->
-        <xsl:value-of select="str:padding(n, '   &#xa;')" />
+        <xsl:value-of select="str:padding(n, '  + &#xa;')" />
     </xsl:template>
     
 

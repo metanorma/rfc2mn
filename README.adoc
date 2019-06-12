@@ -15,8 +15,9 @@ If run with `--stringparam draft "final"`, leave out `crefs`.
 
 [source,sh]
 ----
-xsltproc --catalogs  rfc2mnadoc.xslt rfcV2.xml
-xsltproc --stringparam draft "final" --catalogs  rfc2mnadoc.xslt rfcV2.xml
+xsltproc --catalogs  rfc2mnadoc.xslt rfcV2.xml > rfcV2.adoc
+# draft processing, parse crefs
+xsltproc --stringparam draft "final" --catalogs  rfc2mnadoc.xslt rfcV2.xml > rfcV2.adoc
 ----
 
 = Status 

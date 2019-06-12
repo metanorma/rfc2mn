@@ -104,11 +104,24 @@
 
 	<xsl:variable name="listprefix" />
 	<xsl:template name="author">
-	
 	<!-- TODO: each needs wrapping with xsl:if to not include line if no metadata -->
 	<xsl:param name="auth"/>
-
-[[author]]
+<!--
+:forename_initials: <xsl:value-of select="($auth)/@initials/">
+:surname: <xsl:value-of select="($auth)/@surname/">
+:fullname: <xsl:value-of select="($auth)/@fullname/">
+:role: <xsl:value-of select="($auth)/@role/">
+:organization: <xsl:value-of select="($auth)/organization/">
+:street: <xsl:value-of select="($auth)/address/postal/street/">
+:city: <xsl:value-of select="($auth)/address/postal/city/">
+:region: <xsl:value-of select="($auth)/address/postal/region/">
+:code: <xsl:value-of select="($auth)/address/postal/code/">
+:country: <xsl:value-of select="($auth)/address/postal/country/">
+:phone: <xsl:value-of select="($auth)/address/phone/">
+:fax: <xsl:value-of select="($auth)/address/facsimile/">
+:email: <xsl:value-of select="($auth)/address/email/">
+:uri: <xsl:value-of select="($auth)/address/uri/">
+-->
 initials = "<xsl:value-of select="($auth)/@initials"/>"
 surname = "<xsl:value-of select="($auth)/@surname"/>"
 fullname = "<xsl:value-of select="($auth)/@fullname"/>"
@@ -131,18 +144,18 @@ uri = "<xsl:value-of select="($auth)/address/uri"/>"
     </xsl:template>
     
     <xsl:template match="rfc">
-%%%
-title = "<xsl:value-of select="normalize-space(front/title)"/>"
-abbrev = "<xsl:value-of select="title/@abbrev"/>"
-category = "<xsl:value-of select="@category"/>"
-docName = "<xsl:value-of select="@docName"/>"
-updates = [<xsl:value-of select="@updates"/>]
-obsoletes = [<xsl:value-of select="@obsoletes"/>]
-ipr = "<xsl:value-of select="@ipr"/>"
-area =  <xsl:value-of select="$areas"/>
-workgroup = <xsl:value-of select="$workgroups"/>
-keyword =  [<xsl:value-of select="$keywords"/>]
-date = <xsl:call-template name="dateconvert">
+= <xsl:value-of select="normalize-space(front/title)"/><xsl:text>&#xa;</xsl:text>
+<xsl:value-of select="front/author/@fullname"/>
+:abbrev: <xsl:value-of select="title/@abbrev"/>
+:status: <xsl:value-of select="@category"/>
+:name: <xsl:value-of select="@docName"/>
+:updates: <xsl:value-of select="@updates"/>
+:obsoletes: <xsl:value-of select="@obsoletes"/>
+:ipr: <xsl:value-of select="@ipr"/>
+:area: <xsl:value-of select="$areas"/>
+:workgroup: <xsl:value-of select="$workgroups"/>
+:keyword: <xsl:value-of select="$keywords"/>
+:revdate: <xsl:call-template name="dateconvert">
         <xsl:with-param name="day" select="front/date/@day"/>
         <xsl:with-param name="month" select="front/date/@month"/>
         <xsl:with-param name="year" select="front/date/@year"/>
@@ -153,26 +166,23 @@ date = <xsl:call-template name="dateconvert">
 
 
     <xsl:template match="author">
-[[author]]
-initials = "<xsl:value-of select="@initials"/>"
-surname = "<xsl:value-of select="@surname"/>"
-fullname = "<xsl:value-of select="@fullname"/>"
-role = "<xsl:value-of select="@role"/>"
-organization = "<xsl:value-of select="organization"/>"
+:forename_initials: <xsl:value-of select="@initials"/>
+:lastname: <xsl:value-of select="@surname"/>
+:fullname: <xsl:value-of select="@fullname"/>
+:role: <xsl:value-of select="@role"/>
+:organization: <xsl:value-of select="organization"/>
         <xsl:apply-templates />
     </xsl:template>
-
     <xsl:template match="address">
-[author.address]
-street = "<xsl:value-of select="street"/>"
-city = "<xsl:value-of select="city"/>"
-region = "<xsl:value-of select="region"/>"
-code = "<xsl:value-of select="code"/>"
-country = "<xsl:value-of select="country"/>"
-phone = "<xsl:value-of select="phone"/>"
-facsimile = "<xsl:value-of select="facsimile"/>"
-email = "<xsl:value-of select="email"/>"
-uri = "<xsl:value-of select="uri"/>"
+:street: <xsl:value-of select="street"/>
+:city: <xsl:value-of select="city"/>
+:region: <xsl:value-of select="region"/>
+:code: <xsl:value-of select="code"/>
+:country: <xsl:value-of select="country"/>
+:phone: <xsl:value-of select="phone"/>
+:fax: <xsl:value-of select="facsimile"/>
+:email: <xsl:value-of select="email"/>
+:uri: <xsl:value-of select="uri"/>
         <xsl:apply-templates />
     </xsl:template>
 
@@ -196,52 +206,55 @@ uri = "<xsl:value-of select="uri"/>"
 
     <xsl:template match="front">
         <xsl:apply-templates select="author"/>
-        <xsl:text>&#xa;%%%&#xa;</xsl:text>
         <xsl:apply-templates select="*[not(local-name()='author')]" />
     </xsl:template>
     
 
     <xsl:template match="abstract">
-        <xsl:text>&#xa;.# Abstract</xsl:text>
+        <xsl:text>[abstract]</xsl:text>
         <xsl:apply-templates />
     </xsl:template>
 
     <xsl:template match="note">
-        <xsl:text>&#xa;.# </xsl:text>
+        <xsl:text>&#xa;[NOTE]&#xa;.</xsl:text>
         <xsl:value-of select="@title"/>
-        <xsl:text>&#xa;</xsl:text>
+        <xsl:text>&#xa;===</xsl:text>
         <xsl:apply-templates />
+        <xsl:text>&#xa;===&#xa;</xsl:text>
     </xsl:template>
     
     <xsl:template match="middle">
-        <xsl:text>&#xa;{mainmatter}&#xa;</xsl:text>
         <xsl:apply-templates />
     </xsl:template>
 
     <xsl:template match="section">
         <xsl:text>&#xa;</xsl:text>
         
-        <xsl:value-of select="str:padding(count(ancestor-or-self::section), '#')" />
+        <xsl:apply-templates select="@anchor" />
+        <xsl:text>=</xsl:text><xsl:value-of select="str:padding(count(ancestor-or-self::section), '=')" />
         <xsl:text> </xsl:text>
         <xsl:value-of select="@title | name"/>
-        <xsl:apply-templates select="@anchor" />
         <xsl:text>&#xa;</xsl:text>
         <xsl:apply-templates />
     </xsl:template>
     
     <xsl:template match="@anchor" >
-        <xsl:text> {#</xsl:text>
+        <xsl:text>&#xa;[[</xsl:text>
         <xsl:value-of select="." />
-        <xsl:text>}&#xa;</xsl:text>
+        <xsl:text>]]&#xa;</xsl:text>
     </xsl:template>
     
     <!-- TODO handle name other V3 parent elements -->
     <xsl:template match="name" /> <!-- already did name when we did section so discard -->
 
-    <xsl:template match="//xref"> (#<xsl:value-of select="./@target"/>)</xsl:template>
+    <xsl:template match="//xref">&lt;&lt;<xsl:value-of select="./@target"/>&gt;&gt;</xsl:template>
     <!-- Not bothering with differentiation between format attribute values -->
 
     <xsl:template match="list">
+        <xsl:choose>
+          <xsl:when test="@style = 'numbers'"><xsl:text>[arabic]</xsl:text></xsl:when>
+          <xsl:when test="@style = 'letters'"><xsl:text>[alpha]</xsl:text></xsl:when>
+        </xsl:choose>
         <xsl:apply-templates />
     </xsl:template>
     
@@ -251,35 +264,12 @@ uri = "<xsl:value-of select="uri"/>"
         <xsl:text>&#xa;</xsl:text>
     </xsl:template>
     
-    <xsl:template match="ol">
-        <xsl:apply-templates />
-    </xsl:template>
-    
-    <xsl:template match="ul">
-        <xsl:apply-templates />
-    </xsl:template>
-    
-    <xsl:template match="dl">
-        <xsl:apply-templates />
-    </xsl:template>
-    
-    <xsl:template match="dt">
-        <xsl:apply-templates />
-    </xsl:template>
-    
-    <xsl:template match="dd">
-        <xsl:text>&#xa;: </xsl:text>
-        <xsl:apply-templates />
-        <xsl:text>&#xa;&#xa;</xsl:text>
-    </xsl:template>
-
     <xsl:template match="li">
 
         <xsl:call-template name="make-list-item">
             <xsl:with-param name="indent-level" select="count(ancestor::ol | ancestor::ul)" />
-            <!-- counter-style fails through to default counter style when parent::ul -->
-            <xsl:with-param name="counter-style" select="parent::ol/@style" />
             <xsl:with-param name="item-number" select="count(preceding-sibling::li) + 1" />
+            <xsl:with-param name="numbered" select="count(parent::ol)" />
         </xsl:call-template>
         
         <xsl:apply-templates />
@@ -291,7 +281,7 @@ uri = "<xsl:value-of select="uri"/>"
         <xsl:choose>
           <xsl:when test="parent::list/@style='hanging'">
         <xsl:value-of select="@hangText"/>
-        <xsl:text>&#xa;: </xsl:text>
+        <xsl:text>::&#xa;</xsl:text>
         <xsl:apply-templates />
         <xsl:text>&#xa;&#xa;</xsl:text>
       </xsl:when>
@@ -299,8 +289,8 @@ uri = "<xsl:value-of select="uri"/>"
           <xsl:otherwise>
         <xsl:call-template name="make-list-item">
             <xsl:with-param name="indent-level" select="count(ancestor::list)" />
-            <xsl:with-param name="counter-style" select="parent::list/@style" />
             <xsl:with-param name="item-number" select="count(preceding-sibling::t) + 1" />
+            <xsl:with-param name="numbered" select="parent::list[@style = 'numbers' or @style = 'letters']" />
         </xsl:call-template>
         
         <xsl:apply-templates />
@@ -311,66 +301,32 @@ uri = "<xsl:value-of select="uri"/>"
     </xsl:template>
     
     <xsl:template match="eref">
+        <xsl:value-of select="@target" />
         <xsl:text>[</xsl:text>
         <xsl:value-of select="." />
-        <xsl:text>](</xsl:text>
-        <xsl:value-of select="@target" />
-        <xsl:text>)</xsl:text>
+        <xsl:text>]</xsl:text>
     </xsl:template>
  
-    <xsl:template match="spanx | em | spanx[@size='emph'] | 
-                         spanx[@size='strong'] | spanx[@size='verb']">
+    <xsl:template match="spanx[not(@style)] | spanx[@style='emph']">
+        <xsl:text>_</xsl:text>
+        <xsl:value-of select="." />
+        <xsl:text>_</xsl:text>
+    </xsl:template>
+    
+    <xsl:template match="spanx[@style='strong']">
         <xsl:text>*</xsl:text>
         <xsl:value-of select="." />
         <xsl:text>*</xsl:text>
     </xsl:template>
     
-    <xsl:template match="strong">
-        <xsl:text>**</xsl:text>
-        <xsl:value-of select="." />
-        <xsl:text>**</xsl:text>
-    </xsl:template>
-    
-    <xsl:template match="tt">
+    <xsl:template match="spanx[@style='verb']">
         <xsl:text>`</xsl:text>
         <xsl:value-of select="." />
         <xsl:text>`</xsl:text>
     </xsl:template>
     
-    <!-- This is how it's handled in standard markdown, not Github-flavored markdown -->
-    <xsl:template match="br">
-        <xsl:text>  &#xa;</xsl:text> <!-- Two spaces followed by newline -->
-        <xsl:apply-templates />
-    </xsl:template>
-    
-    <xsl:template match="sub">
-        <xsl:text>~</xsl:text>
-        <xsl:apply-templates />
-        <xsl:text>~</xsl:text>
-    </xsl:template>
-    
-    <xsl:template match="sup">
-        <xsl:text>^</xsl:text>
-        <xsl:apply-templates />
-        <xsl:text>^</xsl:text>
-    </xsl:template>
-    
-    <xsl:template match="blockquote">
-        <xsl:text>&#xa;</xsl:text>
-        <xsl:variable name="text"> <!-- process all the child nodes into text so we can -->
-            <xsl:apply-templates /><!-- postprocess them and add block quote markdown -->
-        </xsl:variable>
-        
-        <xsl:for-each select="str:split($text, '&#xa;')">
-            <xsl:text>&gt; </xsl:text>
-            <xsl:value-of select="." />
-            <xsl:text>&#xa;</xsl:text>
-        </xsl:for-each>
-    </xsl:template>
-    
-
     <xsl:template match="vspace">
-        <xsl:text>&#xa;</xsl:text>
+        <xsl:text> + &#xa;</xsl:text>
         <xsl:if test="@blankLines">
             <xsl:call-template name="blankLines">
                 <xsl:with-param name="n" select="@blankLines - 1"/>
@@ -378,22 +334,12 @@ uri = "<xsl:value-of select="uri"/>"
         </xsl:if>
     </xsl:template>
 
-    <!-- override rule: <link> nodes get special treatment -->
-    <xsl:template match="description//link">
-        <a href="#{@ref}">
-            <xsl:apply-templates />
-        </a>
-    </xsl:template>
-
-
     <xsl:template match="back">
         <xsl:apply-templates />
-
-        <xsl:text>&#xa;{backmatter}&#xa;</xsl:text>
     </xsl:template>
     
     <xsl:template match="references">
-        <xsl:text># </xsl:text>
+        <xsl:text>&#xa;[bibliography]&#xa;== </xsl:text>
         <xsl:choose>
             <xsl:when test="@title">
                 <xsl:value-of select="@title" />
@@ -403,13 +349,13 @@ uri = "<xsl:value-of select="uri"/>"
             </xsl:otherwise>
         </xsl:choose>
         <xsl:apply-templates />
+        <xsl:text>&#xa;</xsl:text>
     </xsl:template>
     
     <xsl:template match="reference">
-        <xsl:text>&#xa;&lt;reference</xsl:text>
-        <xsl:for-each select="@*"><xsl:text> </xsl:text><xsl:value-of select="name()"/>="<xsl:value-of select="."/>"</xsl:for-each>&gt;
+        <xsl:text>&#xa;* [[[</xsl:text><xsl:value-of select="@anchor"/><xsl:text>]]] </xsl:text>
+        <xsl:value-of select="front/title"/>
         <xsl:apply-templates/>
-        <xsl:text>&lt;/reference&gt;&#xa;</xsl:text>
     </xsl:template>
     <xsl:template match="reference//node()">&#xa;&lt;<xsl:value-of select="name()"/><xsl:for-each select="@*"><xsl:text> </xsl:text><xsl:value-of select="name()"/>="<xsl:value-of select="."/>"</xsl:for-each>&gt;<xsl:apply-templates/>&lt;/<xsl:value-of select="name()"/>&gt;&#xa;</xsl:template>
 
@@ -421,78 +367,99 @@ uri = "<xsl:value-of select="uri"/>"
                 <xsl:when test="$draft='final'">
                 </xsl:when>
                 <xsl:otherwise>
-&lt;!-- <xsl:value-of select="@source"/> -- <xsl:value-of select="normalize-space(.)" /> --&gt;
+<xsl:text>&#xa;////&#xa;</xsl:text>
+<xsl:value-of select="@source"/> -- <xsl:value-of select="normalize-space(.)" />
+<xsl:text>&#xa;////&#xa;</xsl:text>
                 </xsl:otherwise>
              </xsl:choose>
     </xsl:template>
 
     <xsl:template match="figure">
+        <xsl:text>&#xa;</xsl:text>
         <xsl:apply-templates select="@anchor" />
-        <xsl:apply-templates />
-        <xsl:choose>
-            <xsl:when test="@title !=''">
-                <xsl:text>Figure: </xsl:text>
+        <xsl:call-template name="artworkheader">
+           <xsl:with-param name="align" select="@align | artwork/@align"/>
+           <xsl:with-param name="alt" select="@alt | artwork/@alt"/>
+           <xsl:with-param name="type" select="@type | artwork/@type"/>
+        </xsl:call-template>
+	<xsl:if test="@title !=''">
+                <xsl:text>. </xsl:text>
                 <xsl:value-of select="@title"/>
                 <xsl:text>&#xa;</xsl:text>
-            </xsl:when>
-            <xsl:when test="@suppress-title = 'true'">
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:text>Figure: </xsl:text>
-                <xsl:number format="1" level="any" count="figure"/>
-                <xsl:text>&#xa;</xsl:text>
-            </xsl:otherwise>
-        </xsl:choose>
+        </xsl:if>
+        <xsl:apply-templates />
+        <xsl:text>&#xa;</xsl:text>
     </xsl:template>
     
     <xsl:template match="preamble">
         <xsl:apply-templates />
     </xsl:template>
-    
-    <xsl:template match="artwork">
-        <xsl:apply-templates match="@type" />
-        <xsl:choose>
-            <xsl:when test="@src != ''">
-                <xsl:apply-templates match="@src" />
-            </xsl:when>
-            <xsl:otherwise>
-              <!--<xsl:apply-templates />-->
-            </xsl:otherwise>
-        </xsl:choose>
-        <xsl:text>F&gt; ~~~~&#xa;</xsl:text>
+
+    <xsl:template name="artworkheader">
+      <xsl:param name="align"/>
+      <xsl:param name="alt"/>
+      <xsl:param name="type"/>
+      <xsl:if test="$alt or $align or $type">
+        <xsl:text>[</xsl:text>
+        <xsl:if test="$align"><xsl:text>align=</xsl:text><xsl:value-of select="$align"/></xsl:if>
+        <xsl:if test="$align and $alt"><xsl:text>,</xsl:text></xsl:if>
+        <xsl:if test="$alt"><xsl:text>alt=</xsl:text><xsl:value-of select="$alt"/></xsl:if>
+        <xsl:if test="($align or $alt) and $type"><xsl:text>,</xsl:text></xsl:if>
+        <xsl:if test="$type"><xsl:text>type=</xsl:text><xsl:value-of select="$type"/></xsl:if>
+        <xsl:text>]&#xa;</xsl:text>
+      </xsl:if>
     </xsl:template>
     
-    <xsl:template match="@src">
-        <xsl:text>{{</xsl:text>
-        <xsl:value-of select="."/>
-        <xsl:text>}}</xsl:text>
-    </xsl:template>
-    
-    <xsl:template match="@type">
-        <xsl:text>F&gt; ~~~ </xsl:text>
-        <xsl:value-of select="." />
-    </xsl:template>
-    
-    <xsl:template match="artwork//text()">
+    <xsl:template match="artwork[not(@src)]">
+	<xsl:choose>
+            <xsl:when test="@type != ''"><xsl:text>====&#xa;</xsl:text></xsl:when>
+	    <xsl:otherwise><xsl:text>....&#xa;</xsl:text></xsl:otherwise>
+	</xsl:choose>
         <xsl:for-each select="str:split(., '&#xa;')">
-            <xsl:text>F&gt; </xsl:text>
             <xsl:value-of select="."/>
             <xsl:text>&#xa;</xsl:text>
         </xsl:for-each>
+	<xsl:choose>
+            <xsl:when test="@type != ''"><xsl:text>====&#xa;</xsl:text></xsl:when>
+	    <xsl:otherwise><xsl:text>....&#xa;</xsl:text></xsl:otherwise>
+	</xsl:choose>
     </xsl:template>
-    
-    <xsl:template match="postamble">
-        <xsl:apply-templates />
+
+    <xsl:template match="artwork[@src]">
+        <xsl:text>&#xa;image::</xsl:text>
+	<xsl:value-of select="@src"/>
+	<xsl:text>[</xsl:text>
+        <xsl:if test="@alt or @width or @height">
+	<xsl:value-of select="@alt"/>
+	<xsl:text>,</xsl:text>
+	<xsl:value-of select="@width"/>
+	<xsl:text>,</xsl:text>
+	<xsl:value-of select="@height"/>
+   	</xsl:if>
+	<xsl:text>]</xsl:text>
     </xsl:template>
-    
     
     <xsl:template match="texttable">
-        <xsl:text>&#xa;</xsl:text>
+	<xsl:text>&#xa;</xsl:text>
+        <xsl:apply-templates select="preamble"/>
+	<xsl:text>&#xa;</xsl:text>
         <xsl:variable name="colcount" select="count(ttcol)"/>
         <xsl:apply-templates select="@anchor" />
-        <xsl:apply-templates select="preamble"/>
+	<xsl:text>&#xa;[cols="</xsl:text>
+        <xsl:for-each select="ttcol">
+            <xsl:call-template name="separator">
+                <xsl:with-param name="lastnode" select="position()=last()"/>
+            </xsl:call-template>
+        </xsl:for-each>
+ 	<xsl:text>"]</xsl:text>
 
         <xsl:text>&#xa;</xsl:text>
+	<xsl:if test="@title and string-length(@title)!=0">
+		<xsl:text>. </xsl:text>
+		<xsl:value-of select="@title"/>
+        </xsl:if>
+
+        <xsl:text>&#xa;|===&#xa;</xsl:text>
         
         <xsl:for-each select="ttcol">
             <xsl:call-template name="tableheader">
@@ -500,134 +467,45 @@ uri = "<xsl:value-of select="uri"/>"
             </xsl:call-template>
         </xsl:for-each>
 
-        <xsl:for-each select="ttcol">
-            <xsl:call-template name="separator">
-                <xsl:with-param name="lastnode" select="position()=last()"/>
-            </xsl:call-template>
-        </xsl:for-each>
-    
         <xsl:for-each select="c">
             <xsl:call-template name="table-c">
                 <xsl:with-param name="colcount" select="$colcount"/>
             </xsl:call-template>
         </xsl:for-each>
 
+        <xsl:text>|===&#xa;&#xa;</xsl:text>
         <xsl:apply-templates select="postamble"/>
-        <xsl:choose>
-            <xsl:when test="@title and string-length(@title)!=0">
-Table: <xsl:value-of select="@title"/>
-                <xsl:text>&#xa;</xsl:text>
-            </xsl:when>
-            <xsl:when test="@suppress-title = 'true'">
-            </xsl:when>
-            <xsl:otherwise>
-Table: <xsl:number format="1" level="any" count="texttable"/>
-                <xsl:text>&#xa;</xsl:text>
-            </xsl:otherwise>
-        </xsl:choose>
+	<xsl:text>&#xa;</xsl:text>
     </xsl:template>
   
     <xsl:template match="ttcol" name="tableheader">
         <xsl:param name="lastnode"/>
+	<xsl:text>| </xsl:text>
         <xsl:value-of select="."/> 
-        <xsl:choose>
-            <xsl:when test="not($lastnode)"> | </xsl:when>
-            <xsl:otherwise><xsl:text>&#xA;</xsl:text></xsl:otherwise>
-        </xsl:choose>
+	<xsl:if test="$lastnode">
+		<xsl:text>&#xa;&#xa;</xsl:text>
+	</xsl:if>
     </xsl:template>
   
     <xsl:template match="ttcol" name="separator">
         <xsl:param name="lastnode"/>
         <xsl:choose>
-            <xsl:when test="@align = 'left'">:---</xsl:when>
-            <xsl:when test="@align = 'center'">:--:</xsl:when>
-            <xsl:when test="@align = 'right'">---:</xsl:when>
-            <xsl:otherwise>----</xsl:otherwise>
+            <xsl:when test="@align = 'left'">&lt;</xsl:when>
+            <xsl:when test="@align = 'center'">^</xsl:when>
+            <xsl:when test="@align = 'right'">&gt;</xsl:when>
+            <xsl:otherwise>&lt;</xsl:otherwise>
         </xsl:choose>
-        <xsl:choose>
-            <xsl:when test="not($lastnode)">|</xsl:when>
-            <xsl:otherwise><xsl:text>&#xA;</xsl:text></xsl:otherwise>
-        </xsl:choose>
+            <xsl:if test="not($lastnode)">,</xsl:if>
     </xsl:template>
   
     <xsl:template match="c" name="table-c">
         <xsl:param name="colcount"/>
+        <xsl:text>| </xsl:text>
         <xsl:apply-templates />
-        <xsl:choose>
-            <xsl:when test="position() mod $colcount = 0">
+           <xsl:if test="position() mod $colcount = 0">
                 <xsl:text>&#xA;</xsl:text>
-            </xsl:when>
-            <xsl:when test="position()=last()"> </xsl:when>
-            <xsl:otherwise> | </xsl:otherwise>
-        </xsl:choose>
+            </xsl:if>
     </xsl:template>
     
-    <!-- V3 tables -->
-    <xsl:template match="table">
-        <xsl:if test="@title != ''">
-            <xsl:text>&#xa;{# </xsl:text>
-            <xsl:value-of select="@title" />
-            <xsl:text> }&#xa;</xsl:text>
-        </xsl:if>
-        <xsl:text>&#xa;</xsl:text>
-        <xsl:apply-templates />
-    </xsl:template>
-    
-    <xsl:template match="tr[th]">
-        <xsl:apply-templates select="th" mode="labels"/>
-        <xsl:text>&#xa;</xsl:text>
-        <xsl:apply-templates select="th" mode="alignment"/>
-        <xsl:text></xsl:text>
-    </xsl:template>
-    
-    <xsl:template match="tr[td]">
-        <xsl:text>&#xa;</xsl:text>
-        <xsl:apply-templates />
-    </xsl:template>
-    
-    <xsl:template match="th" mode="labels">
-        <xsl:apply-templates />
-        <xsl:if test="position() != last()">
-            <xsl:text> | </xsl:text>
-        </xsl:if>
-    </xsl:template>
-
-    <xsl:template match="th" mode="alignment">
-        <xsl:text>---</xsl:text>
-        <xsl:if test="position() != last()">
-            <xsl:text>|</xsl:text>
-        </xsl:if>
-    </xsl:template>
-    
-    <xsl:template match="th[@align='left']" mode="alignment">
-        <xsl:text>:--</xsl:text>
-        <xsl:if test="position() != last()">
-            <xsl:text>|</xsl:text>
-        </xsl:if>
-    </xsl:template>
-
-    <xsl:template match="th[@align='center']" mode="alignment">
-        <xsl:text>:-:</xsl:text>
-        <xsl:if test="position() != last()">
-            <xsl:text>|</xsl:text>
-        </xsl:if>
-    </xsl:template>
-    
-    <xsl:template match="th[@align='right']" mode="alignment">
-        <xsl:text>--:</xsl:text>
-        <xsl:if test="position() != last()">
-            <xsl:text>|</xsl:text>
-        </xsl:if>
-    </xsl:template>
-
-    <xsl:template match="td">
-        <xsl:apply-templates />
-        <xsl:if test="position() != last()">
-            <xsl:text> | </xsl:text>
-        </xsl:if>
-
-    </xsl:template>
-    
-
 
 </xsl:stylesheet>

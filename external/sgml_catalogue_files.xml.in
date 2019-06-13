@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <!DOCTYPE catalog
    PUBLIC "-//OASIS/DTD Entity Resolution XML Catalog V1.0//EN"
-   "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd"> 
-<catalog  xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">  
-	<group  prefer="public"  xml:base="file:///Users/nnicholas/Documents/ribose/rfc2mnadoc/external/">
+   "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+<catalog  xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+	<group  prefer="public"  xml:base="file://${BASEPATH}/external/">
     <system
 	    systemId="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"
        uri="reference.RFC.2119.xml"/>

@@ -146,6 +146,7 @@ uri = "<xsl:value-of select="($auth)/address/uri"/>"
     <xsl:template match="rfc">
 = <xsl:value-of select="normalize-space(front/title)"/><xsl:text>&#xa;</xsl:text>
 <xsl:value-of select="front/author/@fullname"/>
+:mn-document-class: ietf
 :abbrev: <xsl:value-of select="title/@abbrev"/>
 :status: <xsl:value-of select="@category"/>
 :name: <xsl:value-of select="@docName"/>
@@ -206,12 +207,13 @@ uri = "<xsl:value-of select="($auth)/address/uri"/>"
 
     <xsl:template match="front">
         <xsl:apply-templates select="author"/>
+	<xsl:text>&#xa;&#xa;</xsl:text>
         <xsl:apply-templates select="*[not(local-name()='author')]" />
     </xsl:template>
     
 
     <xsl:template match="abstract">
-        <xsl:text>[abstract]</xsl:text>
+        <xsl:text>&#xa;[abstract]</xsl:text>
         <xsl:apply-templates />
     </xsl:template>
 
@@ -355,7 +357,9 @@ uri = "<xsl:value-of select="($auth)/address/uri"/>"
     <xsl:template match="reference">
         <xsl:text>&#xa;* [[[</xsl:text><xsl:value-of select="@anchor"/><xsl:text>]]] </xsl:text>
         <xsl:value-of select="front/title"/>
+	<xsl:text>&#xa;++++&#xa;</xsl:text>
         <xsl:apply-templates/>
+	<xsl:text>&#xa;++++&#xa;</xsl:text>
     </xsl:template>
     <xsl:template match="reference//node()">&#xa;&lt;<xsl:value-of select="name()"/><xsl:for-each select="@*"><xsl:text> </xsl:text><xsl:value-of select="name()"/>="<xsl:value-of select="."/>"</xsl:for-each>&gt;<xsl:apply-templates/>&lt;/<xsl:value-of select="name()"/>&gt;&#xa;</xsl:template>
 

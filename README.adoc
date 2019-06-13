@@ -6,19 +6,22 @@ XSLT conversion from RFC XML v2 to Metanorma Asciidoctor
 
 To run the transformation:
 
-[source,sh]
-----
-setenv SGML_CATALOG_FILES $HOME/rfc2mnadoc/external/sgml_catalogue_files.xml
-----
-
-If run with `--stringparam draft "final"`, leave out `crefs`.
+* Edit the file `external/sgml_catalogue_files.xml` as follows:
+** Change the string `file:///Users/nnicholas/Documents/ribose/rfc2mnadoc/external/`, which is in the `xml:base` attribute of `<group>`, and replace it with the absolute `file://` location of your instance of `external/sgml_catalogue_files.xml`
+** This file references the entity `&RFC2119;` in recent instances of RFC XML files, mapping the URI in RFC XML 2 headers, `<!ENTITY RFC2119 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"> ]>`, to a local copy of `reference.RFC.2119.xml` in the `external` directory. If the RFC XML file references other entities, by URI or by local copy, you will need to repeat the process.
+* Run an XSLT processor over the RFC XML file, and make sure it uses the entity mappings given in `external/sgml_catalogue_files.xml`. The following uses the generic `xsltproc` tool, to map `test.xml` to `test.adoc`, using the file `rfc2mnadoc.xslt` as a stylesheet:
 
 [source,sh]
 ----
-xsltproc --catalogs  rfc2mnadoc.xslt rfcV2.xml > rfcV2.adoc
-# draft processing, parse crefs
-xsltproc --stringparam draft "final" --catalogs  rfc2mnadoc.xslt rfcV2.xml > rfcV2.adoc
+XML_CATALOG_FILES="sgml_catalogue_files.xml  file:///Users/nnicholas/Documents/ribose/rfc2mnadoc/external/sgml_catalogue_files.xml"     XML_DEBUG_CATALOG=1     xsltproc  rfc2mnadoc.xslt test.xml > test.adoc
 ----
+
+* Clean up the output Asciidoctor. No, seriously. Do clean up it. Asciidoctor is very sensitive to extraneous or missing carriage returns, and the stylesheet is experimental and easily confused. There are also chunks of RFC XML 2 that it either won't understand, or won't process well.
+** In particular, we have not attempted to deal with the RFC XML of references, figuring that you may well want to replace them with your own bibliography. (Besides, Metanorma bibliography does not currently support arbitrary referencing, just preformatted references or retching standards from online databases by standard code.) The stylesheet leaves the XML for each reference in place, as a pass-through block, which is expected behaviour for Metanorma-IETF, but not for other flavours of Metanorma.
+** The code does not currently deal with repeating author attributes; you will need to insert the difeferentiating suffixes into the document attributes, `_2`, `_3` etc., yourself.
+** The output is preconfigured to be roundtripped to RFC XML, with the document attribute `:mn-document-class: ietf`. If you wish to convert this to another standard, you will need to change that document attribute -- as well as a whole lot of other Asciidoctor in the document, since Metanorma-IETF is currently not harmonised with the rest of the Metanorma stack, which was developed later.
+* Once that is ready, you can at least attempt to run the Asciidoctor file through Metanorma.
+
 
 = Status 
 

@@ -13,4 +13,4 @@ pushd $TEST_DIR
 for xml_url in $XMLS; do wget -N $xml_url; done
 popd
 
-for xml in $TEST_DIR/*.xml; do ./rfc2mnadoc.sh $xml ${xml}.adoc; done
+for xml in $TEST_DIR/draft-*.xml; do ./rfc2mnadoc.sh $xml ${xml}.adoc; done

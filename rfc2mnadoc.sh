@@ -29,9 +29,7 @@ main() {
   [ "${ADOC}" == "" ] && \
     ADOC=${fname/%.xml}.adoc
 
-  export BASEPATH=${BASEPATH:-${__RFC2MDDIR}}
-  cat ${__RFC2MDDIR}/external/sgml_catalogue_files.xml.in | \
-    envsubst > ${__RFC2MDDIR}/external/sgml_catalogue_files.xml
+  sed "s|\${BASEPATH}|${__RFC2MDDIR}|g" ${__RFC2MDDIR}/external/sgml_catalogue_files.xml.in > ${__RFC2MDDIR}/external/sgml_catalogue_files.xml
 
   env XML_CATALOG_FILES="sgml_catalogue_files.xml file://${__RFC2MDDIR}/external/sgml_catalogue_files.xml" \
     env XML_DEBUG_CATALOG=1 \

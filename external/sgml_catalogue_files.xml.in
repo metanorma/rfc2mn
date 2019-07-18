@@ -4,9 +4,25 @@
    "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
 <catalog  xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
 	<group  prefer="public"  xml:base="file://${BASEPATH}/external/">
-    <system
-	    systemId="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"
-       uri="reference.RFC.2119.xml"/>
+
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml" uri="reference.RFC.2119.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.3552.xml" uri="reference.RFC.3552.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5378.xml" uri="reference.RFC.5378.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5385.xml" uri="reference.RFC.5385.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7253.xml" uri="reference.RFC.7253.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7328.xml" uri="reference.RFC.7328.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7749.xml" uri="reference.RFC.7749.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7763.xml" uri="reference.RFC.7763.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7764.xml" uri="reference.RFC.7764.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7990.xml" uri="reference.RFC.7990.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7991.xml" uri="reference.RFC.7991.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7996.xml" uri="reference.RFC.7996.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml" uri="reference.RFC.8174.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml3//reference.I-D.draft-asciirfc-minimal-02.xml" uri="reference.I-D.draft-asciirfc-minimal-02.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml3//reference.I-D.draft-camelot-holy-grenade-01.xml" uri="reference.I-D.draft-camelot-holy-grenade-01.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml3//reference.I-D.draft-divination-cfapi-00.xml" uri="reference.I-D.draft-divination-cfapi-00.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml3//reference.I-D.draft-wu-netmod-yang-xml-doc-conventions-00.xml" uri="reference.I-D.draft-wu-netmod-yang-xml-doc-conventions-00.xml"/>
+    <system systemId="https://xml2rfc.tools.ietf.org/public/rfc/bibxml3//reference.I-D.draft-ribose-asciirfc-08.xml" uri="reference.I-D.draft-ribose-asciirfc-08.xml"/>
 
     <system systemId="rfc2629.dtd"    uri="rfc2629.dtd"/>
     <system systemId="rfc2629-xhtml.ent"    uri="rfc2629-xhtml.ent"/>

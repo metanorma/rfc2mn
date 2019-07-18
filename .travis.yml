@@ -9,7 +9,8 @@ matrix:
     - os: osx
 
 before_script:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install xsltproc; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install xsltproc libxml2-utils; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install gettext libxml2; fi
 
 script:
   - bash test.sh

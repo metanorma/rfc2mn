@@ -1,0 +1,15 @@
+language: bash
+
+matrix:
+  include:
+    - os: linux
+      dist: xenial
+    - os: linux
+      dist: trusty
+    - os: osx
+
+before_script:
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install xsltproc; fi
+
+script:
+  - bash test.sh

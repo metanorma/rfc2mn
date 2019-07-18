@@ -1,6 +1,6 @@
 #!/bin/bash
 readonly __progname="$(basename $0)"
-readonly __RFC2MDDIR="$(dirname $0)"
+readonly __RFC2MDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" # https://stackoverflow.com/a/246128/902217
 
 errx() {
 	echo -e "$__progname: error: $@" >&2
@@ -29,15 +29,13 @@ main() {
   [ "${ADOC}" == "" ] && \
     ADOC=${fname/%.xml}.adoc
 
-  # echo "$ADOC"
-  cat ${__RFC2MDDIR}/external/sgml_catalogue_files.xml.in | \
-    envsubst > ${__RFC2MDDIR}/external/sgml_catalogue_files.xml
+  sed "s|\${BASEPATH}|${__RFC2MDDIR}|g" ${__RFC2MDDIR}/external/sgml_catalogue_files.xml.in > ${__RFC2MDDIR}/external/sgml_catalogue_files.xml
 
-  XML_CATALOG_FILES="sgml_catalogue_files.xml file://${RFC2MDDIR}/external/sgml_catalogue_files.xml"
-  XML_DEBUG_CATALOG=1
+  env XML_CATALOG_FILES="sgml_catalogue_files.xml file://${__RFC2MDDIR}/external/sgml_catalogue_files.xml" \
+    env XML_DEBUG_CATALOG=1 \
+    xsltproc rfc2mnadoc.xslt ${SRCXML} > ${ADOC} || exit 1
 
-  # echo "xsltproc rfc2mnadoc.xslt ${SRCXML} > ${ADOC}" >&2
-  xsltproc rfc2mnadoc.xslt ${SRCXML} > ${ADOC}
+  [[ -f filename && ! -s filename ]] && exit 2
 }
 
 main "$@"

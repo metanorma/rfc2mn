@@ -29,9 +29,19 @@ main() {
   [ "${ADOC}" == "" ] && \
     ADOC=${fname/%.xml}.adoc
 
-  sed "s|\${BASEPATH}|${__RFC2MDDIR}|g" ${__RFC2MDDIR}/external/sgml_catalogue_files.xml.in > ${__RFC2MDDIR}/external/sgml_catalogue_files.xml
+  case "$(uname -s)" in
+   CYGWIN*|MINGW32*|MSYS*|MINGW*)
+      CATALOG_BASE="$(cmd //c "echo %cd:\\=/%")/external/"
+      ;;
 
-  env XML_CATALOG_FILES="sgml_catalogue_files.xml file://${__RFC2MDDIR}/external/sgml_catalogue_files.xml" \
+   *)
+      CATALOG_BASE="file://${__RFC2MDDIR}/external/"
+      ;;
+  esac
+
+  sed "s|\${BASEPATH}|${CATALOG_BASE}|g" ${__RFC2MDDIR}/external/sgml_catalogue_files.xml.in > ${__RFC2MDDIR}/external/sgml_catalogue_files.xml
+
+  env XML_CATALOG_FILES="sgml_catalogue_files.xml ${CATALOG_BASE}/sgml_catalogue_files.xml" \
     env XML_DEBUG_CATALOG=1 \
     xsltproc rfc2mnadoc.xslt ${SRCXML} > ${ADOC} || exit 1
 

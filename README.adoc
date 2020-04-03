@@ -1,5 +1,7 @@
 = rfc2mn: Convert RFC XML v2 into Metanorma AsciiDoc
 
+image:https://github.com/metanorma/rfc2mn/workflows/test/badge.svg["Build Status", link="https://github.com/metanorma/rfc2mn/actions?workflow=test"]
+
 XSLT conversion from RFC XML v2 to Metanorma AsciiDoc
 
 == Usage

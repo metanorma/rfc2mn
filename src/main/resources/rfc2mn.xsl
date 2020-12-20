@@ -485,9 +485,15 @@
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 
-	<xsl:template match="/rfc/front/note/@title | /rfc/front/note/name" mode="title">
+	<xsl:template match="/rfc/front/note/@title" mode="title">
 		<xsl:text>.</xsl:text>
 		<xsl:value-of select="."/>
+		<xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+	
+	<xsl:template match="/rfc/front/note/name" mode="title">
+		<xsl:text>.</xsl:text>
+		<xsl:apply-templates />
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	
@@ -537,11 +543,18 @@
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 
-	<xsl:template match="section/@title | section/name" mode="title">
+	<xsl:template match="section/@title" mode="title">
 		<xsl:variable name="level" select="count(ancestor::section) + 1"/>
 		<xsl:value-of select="str:padding($level, '=')"/>
 		<xsl:text> </xsl:text>
 		<xsl:value-of select="."/>
+		<xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+	<xsl:template match="section/name" mode="title">
+		<xsl:variable name="level" select="count(ancestor::section) + 1"/>
+		<xsl:value-of select="str:padding($level, '=')"/>
+		<xsl:text> </xsl:text>
+		<xsl:apply-templates />
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	<xsl:template match="section/name"/>
@@ -575,8 +588,11 @@
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	
-	<xsl:template match="references/@title | references/name" mode="title">
+	<xsl:template match="references/@title" mode="title">
 		<xsl:text>== </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+	<xsl:template match="references/name" mode="title">
+		<xsl:text>== </xsl:text><xsl:apply-templates /><xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	<xsl:template match="references/name"/>
 	
@@ -672,6 +688,16 @@
 		<xsl:text>^</xsl:text>
 	</xsl:template>	
 	
+	<xsl:template match="bcp14">
+		<xsl:text>[bcp14]#</xsl:text>
+		<xsl:apply-templates/>
+		<xsl:text>#</xsl:text>
+	</xsl:template>
+	
+	<xsl:template match="br">
+		<xsl:text> +&#xa;</xsl:text>
+	</xsl:template>
+	
 	<xsl:template match="figure">
 		<xsl:text>&#xa;</xsl:text>
 		<xsl:apply-templates select="@anchor"/>
@@ -716,8 +742,12 @@
 		</xsl:if>
 	</xsl:template>
 		
-	<xsl:template match="figure/@title | figure/name" mode="title">
+	<xsl:template match="figure/@title" mode="title">
 		<xsl:text>.</xsl:text><xsl:value-of select="."/>
+		<xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+	<xsl:template match="figure/name" mode="title">
+		<xsl:text>.</xsl:text><xsl:apply-templates />
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	<xsl:template match="figure/name"/>
@@ -834,7 +864,7 @@
 		</xsl:if>
 	</xsl:template>
 	
-	<xsl:template match="cref">
+	<xsl:template match="crefV2">
 		<xsl:text>&#xa;</xsl:text>
 		<xsl:text>NOTE: </xsl:text><xsl:apply-templates />
 		<xsl:text>&#xa;</xsl:text>
@@ -845,14 +875,45 @@
 		<xsl:text>====</xsl:text>
 		<xsl:text>&#xa;</xsl:text>
 		<xsl:apply-templates />
-		
 		<xsl:text>&#xa;</xsl:text>
 		<xsl:text>====</xsl:text>
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	
-	<xsl:template match="cref/@source">
+	<xsl:template match="crefV2/@source">
 		<xsl:text>,source=</xsl:text><xsl:value-of select="."/>
+	</xsl:template>
+	
+	<xsl:template match="cref">
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:apply-templates select="@anchor"/>
+		<xsl:variable name="cref_settings">
+			<xsl:for-each select="@source | @display">
+				<xsl:apply-templates select="."/>
+				<xsl:if test="position() != last()">,</xsl:if>
+			</xsl:for-each>
+		</xsl:variable>
+		<xsl:if test="$cref_settings != ''">
+			<xsl:text>[</xsl:text><xsl:value-of select="$cref_settings"/><xsl:text>]&#xa;</xsl:text>
+		</xsl:if>
+		<xsl:apply-templates select="name" mode="title"/>
+		<xsl:text>****</xsl:text>
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:apply-templates />
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:text>****</xsl:text>
+		<xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+	<xsl:template match="cref/@source">
+		<xsl:text>reviewer="</xsl:text><xsl:value-of select="."/><xsl:text>"</xsl:text>
+	</xsl:template>
+	<xsl:template match="cref/@display">
+		<xsl:text>display=</xsl:text><xsl:value-of select="."/>
+	</xsl:template>
+	<xsl:template match="cref/name" />
+	<xsl:template match="cref/name" mode="title">
+		<xsl:text>.</xsl:text><xsl:apply-templates />
+		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	
 	<xsl:template match="iref[@item and not(@subitem)]">
@@ -872,7 +933,10 @@
 		<xsl:value-of select="@target"/>
 		<xsl:choose>
 			<xsl:when test="@format">
-				<xsl:text>,format=</xsl:text><xsl:value-of select="@format"/><xsl:text>: </xsl:text><xsl:value-of select="."/>
+				<xsl:text>,format=</xsl:text><xsl:value-of select="@format"/>
+				<xsl:if test="normalize-space(.) != ''">
+					<xsl:text>: </xsl:text><xsl:value-of select="."/>
+				</xsl:if>
 			</xsl:when>
 			<xsl:when test="normalize-space(.) != ''">
 				<xsl:text>,</xsl:text><xsl:value-of select="."/>
@@ -1196,8 +1260,12 @@
 		</xsl:choose>
 	</xsl:template>
 	
-	<xsl:template match="texttable/@title | texttable/name" mode="title">
+	<xsl:template match="texttable/@title" mode="title">
 		<xsl:text>.</xsl:text><xsl:value-of select="."/>
+		<xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+	<xsl:template match="texttable/name" mode="title">
+		<xsl:text>.</xsl:text><xsl:apply-templates />
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	<xsl:template match="texttable/name"/>
@@ -1400,10 +1468,84 @@
 		<xsl:apply-templates/>
 	</xsl:template>
 	
+	<!-- ================ -->
+	<!-- End of V3 table processing -->
+	<!-- ================ -->
+	
+	<!-- ================ -->
+	<!-- blockquote processing -->
+	<!-- ================ -->
+	<xsl:template match="blockquote">
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:apply-templates select="@anchor"/>
+		<xsl:text>[quote</xsl:text>
+		<xsl:for-each select="@quotedFrom | @cite">
+			<xsl:text>,</xsl:text>
+			<xsl:apply-templates select="."/>
+		</xsl:for-each>
+		<xsl:text>]</xsl:text>
+		<xsl:apply-templates />
+	</xsl:template>
+	
+	<xsl:template match="blockquote/@quotedFrom">
+		<xsl:text>attribution=</xsl:text><xsl:value-of select="."/>
+	</xsl:template>
+	
+	<xsl:template match="blockquote/@cite">
+		<xsl:value-of select="."/>
+	</xsl:template>
+	
+	<!-- ================ -->
+	<!-- End of blockquote processing -->
+	<!-- ================ -->
 	
 	
 	<!-- ================ -->
-	<!-- End of V3 table processing -->
+	<!-- relref processing -->
+	<!-- ================ -->
+	<xsl:template match="relref">
+		<xsl:text>&lt;&lt;</xsl:text>
+		<xsl:value-of select="@target"/>
+		
+		<xsl:variable name="relative">
+			<xsl:apply-templates select="@relative"/>
+		</xsl:variable>
+		<xsl:value-of select="$relative"/>
+		
+		<xsl:variable name="displayFormat" select="@displayFormat"/>
+		<xsl:variable name="section" select="@section"/>
+		
+		<xsl:variable name="relref_settings">
+			<xsl:choose>
+				<xsl:when test="normalize-space($relative) = ''">
+					<xsl:value-of select="@displayFormat"/>
+					<xsl:if test="@displayFormat and @section">,</xsl:if>
+					<xsl:value-of select="@section"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="@section"/>
+					<xsl:if test="@displayFormat and @section"><xsl:text> </xsl:text></xsl:if>
+					<xsl:value-of select="@displayFormat"/>
+				</xsl:otherwise>
+			</xsl:choose>
+			<xsl:if test="normalize-space(.) != ''">
+				<xsl:text>: </xsl:text><xsl:apply-templates /> <!-- : text -->
+			</xsl:if>
+		</xsl:variable>
+		
+		<xsl:if test="normalize-space($relref_settings) != ''">
+			<xsl:text>,</xsl:text><xsl:value-of select="$relref_settings"/>
+		</xsl:if>
+		<xsl:text>&gt;&gt;</xsl:text>
+	</xsl:template>
+	
+	<xsl:template match="relref/@relative">
+		<xsl:text>#</xsl:text><xsl:value-of select="."/>
+	</xsl:template>
+	
+	
+	<!-- ================ -->
+	<!-- End of relref processing -->
 	<!-- ================ -->
 	
 	<!-- ================ -->

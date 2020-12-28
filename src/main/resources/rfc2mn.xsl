@@ -6,9 +6,10 @@
 	xmlns:str="http://exslt.org/strings"
 	xmlns:exsl="http://exslt.org/common"
 	xmlns:l="urn:local"
+	xmlns:xalan="http://xml.apache.org/xalan" 
 	exclude-result-prefixes="xsl date str exsl l">
 
-	<!-- Metanorma-IETF: https://www.metanorma.com/author/ietf/topics/markup-v2/ -->
+	<!-- Metanorma-IETF: https://www.metanorma.com/author/ietf/topics/markup-v2/, https://www.metanorma.com/author/ietf/topics/markup/ -->
 
 	<xsl:output method="text" encoding="utf-8" />
 	<xsl:strip-space elements="*" />
@@ -35,20 +36,34 @@
 		<xsl:text>:doctype: </xsl:text><xsl:call-template name="getDocType"/><xsl:text>&#xa;</xsl:text>
 		<xsl:text>:abbrev: </xsl:text><xsl:value-of select="front/title/@abbrev"/><xsl:text>&#xa;</xsl:text>		
 		<xsl:text>:name: </xsl:text><xsl:call-template name="getName"/><xsl:text>&#xa;</xsl:text>
-		<xsl:apply-templates select="@category"/> <!-- :status: -->
-		<xsl:text>:intended-series: </xsl:text><xsl:call-template name="getIntendedSeries"/><xsl:text>&#xa;</xsl:text>
-		<xsl:text>:submission-type: </xsl:text><xsl:value-of select="@submissionType"/><xsl:text>&#xa;</xsl:text>
+		<xsl:call-template name="getStatus"/> <!-- :status: -->
+		<xsl:call-template name="getIntendedSeries"/> <!-- :intended-series: -->
+		<xsl:call-template name="getSubmissionType"/> <!-- :submission-type: -->
 		<xsl:text>:ipr: </xsl:text><xsl:value-of select="@ipr"/><xsl:text>&#xa;</xsl:text>
 		<xsl:apply-templates select="@iprExtract"/> <!-- :ipr-extract: -->
 		<xsl:apply-templates select="@obsoletes"/> <!-- :obsoletes: -->
 		<xsl:apply-templates select="@updates"/> <!-- :updates: -->
+		
+		<xsl:apply-templates select="link[@rel = 'item']/@href"/> <!-- :included-in: -->
+		<xsl:apply-templates select="link[@rel = 'describedby']/@href"/> <!-- :described-by: -->		
+		<xsl:apply-templates select="link[@rel = 'convertedFrom']/@href"/> <!-- :derived-from: -->
+		<xsl:apply-templates select="link[@rel = 'alternate']/@href"/> <!-- :instance: -->
+		
 		<xsl:apply-templates select="front/date" mode="header"/> <!-- :revdate: -->
 		<xsl:call-template name="getArea"/> <!-- :area: -->
 		<xsl:call-template name="getWorkgroup"/> <!-- :workgroup: -->
 		<xsl:call-template name="getKeyword"/> <!-- :keyword: -->
 		<xsl:apply-templates select="@xml:lang"/> <!-- :xml-lang: -->
 		<xsl:apply-templates select="@consensus"/> <!-- :consensus: -->
-		<xsl:call-template name="getAuthor"/> <!-- :fullname: :forename_initials: :lastname: :role: :organization: :organization_abbrev: :email: :fax: :uri: :phone: :street: :city: :region: :country: :code:-->
+		<xsl:apply-templates select="@indexInclude"/> <!-- :index-include: -->
+		<xsl:apply-templates select="@sortRefs"/> <!-- :sort-refs: -->
+		<xsl:apply-templates select="@symRefs"/> <!-- :sym-refs: -->
+		<xsl:apply-templates select="@tocInclude"/> <!-- :toc-include: -->
+		<xsl:apply-templates select="@tocDepth"/> <!-- :toc-depth: -->
+		<xsl:apply-templates select="front/author[1]/organization/@showOnFrontPage"/> <!-- :show-on-front-page: -->
+		
+		<xsl:call-template name="getAuthor"/> <!-- :fullname: :forename_initials: :initials: :lastname: :surname: :role: :organization: :affiliation: :organization_abbrev: :affiliation_abbrev: :email: :fax: :uri: :contributor-uri: :phone: :street: :city: :region: :country: :code:-->
+		
 		<!-- processing instructions  -->
 		<!-- see https://www.metanorma.com/author/ietf/ref/document-attributes-v2/#processing-instructions-for-xml2rfc -->
 		<xsl:call-template name="getProcessingInstructions"/> <!-- :artworkdelimiter: :artworklines: :authorship: :autobreaks: :background: :comments: :compact: ...  -->
@@ -86,31 +101,46 @@
 
 	<xsl:template name="getName">
 		<xsl:choose>
-			<xsl:when test="$isDraft = 'true'">
-				<xsl:value-of select="@docName"/> <!-- internet-draft -->
+			<xsl:when test="$isDraft = 'true'">  <!-- internet-draft -->
+				<xsl:choose>
+					<xsl:when test="@docName"><xsl:value-of select="@docName"/></xsl:when>
+					<xsl:otherwise><xsl:value-of select="front/seriesInfo/@value"/></xsl:otherwise>
+				</xsl:choose>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:value-of select="@number"/> <!-- rfc -->
+				<xsl:choose> <!-- rfc -->
+					<xsl:when test="@number"><xsl:value-of select="@number"/></xsl:when>
+					<xsl:otherwise><xsl:value-of select="front/seriesInfo/@value"/></xsl:otherwise>
+				</xsl:choose>
 			</xsl:otherwise>
 		</xsl:choose>
 		
 	</xsl:template>
 
-	<xsl:template match="rfc/@category">
+	<xsl:template name="getStatus">
 		<xsl:variable name="category">
 			<xsl:choose>
-				<xsl:when test=". = 'std'">standard</xsl:when>
-				<xsl:when test=". = 'info'">informational</xsl:when>
-				<xsl:when test=". = 'exp'">experimental</xsl:when>
-				<xsl:otherwise><xsl:value-of select="."/></xsl:otherwise>
+				<xsl:when test="@category">
+					<xsl:choose>
+						<xsl:when test="@category = 'std'">standard</xsl:when>
+						<xsl:when test="@category = 'info'">informational</xsl:when>
+						<xsl:when test="@category = 'exp'">experimental</xsl:when>
+						<xsl:otherwise><xsl:value-of select="."/></xsl:otherwise>
+					</xsl:choose>
+				</xsl:when>
+				<xsl:when test="front/seriesInfo[1]/@status">
+					<xsl:value-of select="front/seriesInfo[1]/@status"/>
+				</xsl:when>
 			</xsl:choose>
 		</xsl:variable>
-		<xsl:text>:status: </xsl:text><xsl:value-of select="$category"/><xsl:text>&#xa;</xsl:text> <!-- synonym :docstage: -->
+		<xsl:if test="normalize-space($category) != ''">
+			<xsl:text>:status: </xsl:text><xsl:value-of select="$category"/><xsl:text>&#xa;</xsl:text> <!-- synonym :docstage: -->
+		</xsl:if>
 	</xsl:template>
 
 	<!-- intended-series: -->
 	<xsl:template name="getIntendedSeries">
-		<xsl:choose>
+		<!-- <xsl:choose>
 			<xsl:when test="$isDraft = 'true'">
 				<xsl:choose>
 					<xsl:when test="@category = 'std'">standard</xsl:when>
@@ -119,7 +149,7 @@
 					<xsl:otherwise><xsl:value-of select="@category"/></xsl:otherwise>
 				</xsl:choose>
 			</xsl:when>
-			<xsl:otherwise> <!-- RFC -->
+			<xsl:otherwise> RFC
 				<xsl:choose>
 					<xsl:when test="@category = 'info'">informational</xsl:when>
 					<xsl:when test="@category = 'exp'">exp</xsl:when>
@@ -129,8 +159,34 @@
 					<xsl:otherwise><xsl:value-of select="@category"/></xsl:otherwise>
 				</xsl:choose>
 			</xsl:otherwise>
-		</xsl:choose>
+		</xsl:choose> -->
+		
+		<xsl:variable name="intended-series">
+			<xsl:choose>
+				<xsl:when test="@category = 'std'">standard</xsl:when>
+				<xsl:when test="@category = 'info'">informational</xsl:when>
+				<xsl:when test="@category = 'exp'">experimental</xsl:when>
+				<xsl:when test="@category"><xsl:value-of select="@category"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="front/seriesInfo[2]/@status"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:if test="normalize-space($intended-series) != ''">
+			<xsl:text>:intended-series: </xsl:text><xsl:value-of select="$intended-series"/><xsl:text>&#xa;</xsl:text>
+		</xsl:if>
 	</xsl:template>
+
+	<xsl:template name="getSubmissionType">
+		<xsl:variable name="submissionType">
+			<xsl:choose>
+				<xsl:when test="@submissionType"><xsl:value-of select="@submissionType"/></xsl:when>
+				<xsl:otherwise><xsl:value-of select="front/seriesInfo/@stream"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:if test="normalize-space($submissionType) != ''">
+			<xsl:text>:submission-type: </xsl:text><xsl:value-of select="@submissionType"/><xsl:text>&#xa;</xsl:text>
+		</xsl:if>
+	</xsl:template>
+	
 
 	<xsl:template match="rfc/@iprExtract">
 		<xsl:if test=". != ''">
@@ -149,6 +205,31 @@
 			<xsl:text>:updates: </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
 		</xsl:if>
 	</xsl:template>
+
+	<xsl:template match="rfc/link[@rel = 'item']/@href">
+		<xsl:if test=". != ''">
+			<xsl:text>:included-in: </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
+		</xsl:if>
+	</xsl:template>
+
+	<xsl:template match="rfc/link[@rel = 'describedby']/@href">
+		<xsl:if test=". != ''">
+			<xsl:text>:described-by: </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
+		</xsl:if>
+	</xsl:template>
+
+	<xsl:template match="rfc/link[@rel = 'convertedFrom']/@href">
+		<xsl:if test=". != ''">
+			<xsl:text>:derived-from: </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
+		</xsl:if>
+	</xsl:template>
+
+	<xsl:template match="rfc/link[@rel = 'alternate']/@href">
+		<xsl:if test=". != ''">
+			<xsl:text>:instance: </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
+		</xsl:if>
+	</xsl:template>
+	
 
 	<xsl:template match="rfc/front/date" mode="header">
 		<xsl:text>:revdate: </xsl:text>
@@ -234,11 +315,38 @@
 	<xsl:template match="@consensus">
 		<xsl:text>:consensus: </xsl:text>
 		<xsl:choose>
-			<xsl:when test=". = 'yes'">true</xsl:when>
+			<xsl:when test=". = 'yes' or . = 'true'">true</xsl:when>
 			<xsl:otherwise>false</xsl:otherwise>
 		</xsl:choose>
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
+
+	<!-- V3 attributes -->
+	<xsl:template match="@indexInclude">
+		<xsl:text>:index-include: </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+	
+	<xsl:template match="@sortRefs">
+		<xsl:text>:sort-refs: </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="@symRefs">
+		<xsl:text>:sym-refs: </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="@tocInclude">
+		<xsl:text>:toc-include: </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="@tocDepth">
+		<xsl:text>:toc-depth: </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+	
+	<xsl:template match="/rfc/front/author/organization/@showOnFrontPage">
+		<xsl:text>:show-on-front-page: </xsl:text><xsl:value-of select="."/><xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+	
+	<!-- End of V3 attributes -->
 
 	<xsl:template name="getAuthor">
 		<xsl:for-each select="/rfc/front/author">
@@ -275,14 +383,16 @@
 	
 	<xsl:template match="/rfc/front/author/@initials">
 		<xsl:param name="sfx"/>
-		<xsl:text>:forename_initials</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
+		<!-- <xsl:text>:forename_initials</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
+		<xsl:text>:initials</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
 		<xsl:value-of select="."/>
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	
 	<xsl:template match="/rfc/front/author/@surname">
 		<xsl:param name="sfx"/>
-		<xsl:text>:lastname</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
+		<!-- <xsl:text>:lastname</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
+		<xsl:text>:surname</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
 		<xsl:value-of select="."/>
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
@@ -298,7 +408,8 @@
 	
 	<xsl:template match="/rfc/front/author/organization">
 		<xsl:param name="sfx"/>
-		<xsl:text>:organization</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
+		<!-- <xsl:text>:organization</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
+		<xsl:text>:affiliation</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
 		<xsl:apply-templates />
 		<xsl:text>&#xa;</xsl:text>
 		<xsl:apply-templates select="@abbrev">
@@ -308,7 +419,8 @@
 
 	<xsl:template match="/rfc/front/author/organization/@abbrev">
 		<xsl:param name="sfx"/>
-		<xsl:text>:organization_abbrev</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
+		<!-- <xsl:text>:organization_abbrev</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
+		<xsl:text>:affiliation_abbrev</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
 		<xsl:value-of select="."/>
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
@@ -348,7 +460,8 @@
 	
 	<xsl:template match="/rfc/front/author/address/uri">
 		<xsl:param name="sfx"/>
-		<xsl:text>:uri</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
+		<!-- <xsl:text>:uri</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
+		<xsl:text>:contributor-uri</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
 		<xsl:apply-templates />
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
@@ -361,71 +474,154 @@
 
 	<xsl:template match="/rfc/front/author/address/postal">
 		<xsl:param name="sfx"/>	
-		<xsl:apply-templates select="street[1]">
-			<xsl:with-param name="sfx" select="$sfx"/>
-		</xsl:apply-templates>
-		<xsl:apply-templates select="city[1]">
-			<xsl:with-param name="sfx" select="$sfx"/>
-		</xsl:apply-templates>
-		<xsl:apply-templates select="region[1]">
-			<xsl:with-param name="sfx" select="$sfx"/>
-		</xsl:apply-templates>
-		<xsl:apply-templates select="country[1]">
-			<xsl:with-param name="sfx" select="$sfx"/>
-		</xsl:apply-templates>
-		<xsl:apply-templates select="code[1]">
-			<xsl:with-param name="sfx" select="$sfx"/>
-		</xsl:apply-templates>
+		<xsl:variable name="postal">
+			<xsl:apply-templates select="street[1]">
+				<xsl:with-param name="sfx" select="$sfx"/>
+			</xsl:apply-templates>
+			<xsl:apply-templates select="city[1]">
+				<xsl:with-param name="sfx" select="$sfx"/>
+			</xsl:apply-templates>
+			<xsl:apply-templates select="cityarea[1]">
+				<xsl:with-param name="sfx" select="$sfx"/>
+			</xsl:apply-templates>
+			<xsl:apply-templates select="region[1]">
+				<xsl:with-param name="sfx" select="$sfx"/>
+			</xsl:apply-templates>
+			<xsl:apply-templates select="country[1]">
+				<xsl:with-param name="sfx" select="$sfx"/>
+			</xsl:apply-templates>
+			<xsl:apply-templates select="extaddr[1]">
+				<xsl:with-param name="sfx" select="$sfx"/>
+			</xsl:apply-templates>
+			<xsl:apply-templates select="pobox[1]">
+				<xsl:with-param name="sfx" select="$sfx"/>
+			</xsl:apply-templates>
+			<xsl:apply-templates select="sortingcode[1]">
+				<xsl:with-param name="sfx" select="$sfx"/>
+			</xsl:apply-templates>
+			<xsl:apply-templates select="code[1]">
+				<xsl:with-param name="sfx" select="$sfx"/>
+			</xsl:apply-templates>
+			<xsl:apply-templates select="postalLine[1]">
+				<xsl:with-param name="sfx" select="$sfx"/>
+			</xsl:apply-templates>
+		</xsl:variable>
+		<xsl:for-each select="xalan:nodeset($postal)/item[normalize-space(text()) != '']">
+			<xsl:if test="position() = 1"><xsl:text>:address</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text></xsl:if>
+			<xsl:value-of select="." />
+			<xsl:if test="position() != last()"> + \</xsl:if>
+			<xsl:text>&#xa;</xsl:text>
+		</xsl:for-each>
 	</xsl:template>
 
 	<xsl:template match="/rfc/front/author/address/postal/street">
 		<xsl:param name="sfx"/>	
-		<xsl:text>:street</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
-		<xsl:for-each select="ancestor::postal/street">
-			<xsl:apply-templates/>
-			<xsl:if test="position() != last()">\ </xsl:if>
-		</xsl:for-each>
-		<xsl:text>&#xa;</xsl:text>
+		<!-- <xsl:text>:street</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
+		<item>
+			<xsl:for-each select="ancestor::postal/street[normalize-space(text()) != '']">
+				<xsl:apply-templates/>
+				<xsl:if test="position() != last()">\ </xsl:if>
+			</xsl:for-each>
+		</item>
+		<!-- <xsl:text>&#xa;</xsl:text> -->
 	</xsl:template>
 
 	<xsl:template match="/rfc/front/author/address/postal/city">
 		<xsl:param name="sfx"/>	
-		<xsl:text>:city</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
-		<xsl:for-each select="ancestor::postal/city">
-			<xsl:apply-templates/>
-			<xsl:if test="position() != last()">\ </xsl:if>
-		</xsl:for-each>
-		<xsl:text>&#xa;</xsl:text>
+		<!-- <xsl:text>:city</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
+		<item>
+			<xsl:for-each select="ancestor::postal/city[normalize-space(text()) != '']">
+				<xsl:apply-templates/>
+				<xsl:if test="position() != last()">\ </xsl:if>
+			</xsl:for-each>
+		</item>
+		<!-- <xsl:text>&#xa;</xsl:text> -->
+	</xsl:template>
+	
+	<xsl:template match="/rfc/front/author/address/postal/cityarea"> <!-- V3 -->
+		<xsl:param name="sfx"/>	
+		<item>
+			<xsl:for-each select="ancestor::postal/cityarea[normalize-space(text()) != '']">
+				<xsl:apply-templates/>
+				<xsl:if test="position() != last()">\ </xsl:if>
+			</xsl:for-each>
+		</item>
 	</xsl:template>
 	
 	<xsl:template match="/rfc/front/author/address/postal/region">
 		<xsl:param name="sfx"/>	
-		<xsl:text>:region</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
-		<xsl:for-each select="ancestor::postal/region">
-			<xsl:apply-templates/>
-			<xsl:if test="position() != last()">\ </xsl:if>
-		</xsl:for-each>
-		<xsl:text>&#xa;</xsl:text>
+		<!-- <xsl:text>:region</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
+		<item>
+			<xsl:for-each select="ancestor::postal/region[normalize-space(text()) != '']">
+				<xsl:apply-templates/>
+				<xsl:if test="position() != last()">\ </xsl:if>
+			</xsl:for-each>
+		</item>
+		<!-- <xsl:text>&#xa;</xsl:text> -->
 	</xsl:template>
 	
 	<xsl:template match="/rfc/front/author/address/postal/country">
 		<xsl:param name="sfx"/>	
-		<xsl:text>:country</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
-		<xsl:for-each select="ancestor::postal/country">
-			<xsl:apply-templates/>
-			<xsl:if test="position() != last()">\ </xsl:if>
-		</xsl:for-each>
-		<xsl:text>&#xa;</xsl:text>
+		<!-- <xsl:text>:country</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
+		<item>
+			<xsl:for-each select="ancestor::postal/country[normalize-space(text()) != '']">
+				<xsl:apply-templates/>
+				<xsl:if test="position() != last()">\ </xsl:if>
+			</xsl:for-each>
+		</item>
+		<!-- <xsl:text>&#xa;</xsl:text> -->
+	</xsl:template>
+	
+	<xsl:template match="/rfc/front/author/address/postal/extaddr"> <!-- V3 -->
+		<xsl:param name="sfx"/>	
+		<item>
+			<xsl:for-each select="ancestor::postal/extaddr[normalize-space(text()) != '']">
+				<xsl:apply-templates/>
+				<xsl:if test="position() != last()">\ </xsl:if>
+			</xsl:for-each>
+		</item>
+	</xsl:template>
+
+	<xsl:template match="/rfc/front/author/address/postal/pobox"> <!-- V3 -->
+		<xsl:param name="sfx"/>	
+		<item>
+			<xsl:for-each select="ancestor::postal/pobox[normalize-space(text()) != '']">
+				<xsl:apply-templates/>
+				<xsl:if test="position() != last()">\ </xsl:if>
+			</xsl:for-each>
+		</item>
+	</xsl:template>
+
+	<xsl:template match="/rfc/front/author/address/postal/sortingcode"> <!-- V3 -->
+		<xsl:param name="sfx"/>	
+		<item>
+			<xsl:for-each select="ancestor::postal/sortingcode[normalize-space(text()) != '']">
+				<xsl:apply-templates/>
+				<xsl:if test="position() != last()">\ </xsl:if>
+			</xsl:for-each>
+		</item>
 	</xsl:template>
 	
 	<xsl:template match="/rfc/front/author/address/postal/code">
 		<xsl:param name="sfx"/>	
-		<xsl:text>:code</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
-		<xsl:for-each select="ancestor::postal/code">
-			<xsl:apply-templates/>
-			<xsl:if test="position() != last()">\ </xsl:if>
-		</xsl:for-each>
-		<xsl:text>&#xa;</xsl:text>
+		<!-- <xsl:text>:code</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
+		<item>
+			<xsl:for-each select="ancestor::postal/code[normalize-space(text()) != '']">
+				<xsl:apply-templates/>
+				<xsl:if test="position() != last()">\ </xsl:if>
+			</xsl:for-each>
+		</item>
+		<!-- <xsl:text>&#xa;</xsl:text> -->
+	</xsl:template>
+	
+	<xsl:template match="/rfc/front/author/address/postal/postalLine">
+		<xsl:param name="sfx"/>	
+		<item>
+			<xsl:for-each select="ancestor::postal/postalLine[normalize-space(text()) != '']">
+				<xsl:apply-templates/>
+				<xsl:if test="position() != last()">\ </xsl:if>
+			</xsl:for-each>
+		</item>		
 	</xsl:template>
 
 	<xsl:template name="getProcessingInstructions">

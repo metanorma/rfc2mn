@@ -854,7 +854,7 @@
 		<xsl:text>keep-with-previous=</xsl:text><xsl:value-of select="."/>
 	</xsl:template>
 	
-	<xsl:template match="spanx[@style = 'emph'] | em">
+	<xsl:template match="spanx[not(@style)] | spanx[@style = 'emph'] | em">
 		<xsl:text>_</xsl:text>
 		<xsl:apply-templates/>
 		<xsl:text>_</xsl:text>

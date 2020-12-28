@@ -33,9 +33,9 @@ public class RELAXNGValidator {
     
     public boolean isValid(File xmlFile) {
         
-        boolean isValid = checkAgainstV2(xmlFile);
+        boolean isValid = validate(xmlFile, "V2");
         if (!isValid) {
-            isValid = checkAgainstV3(xmlFile);
+            isValid = validate(xmlFile, "V3");
         }
         
         return isValid;
@@ -45,15 +45,23 @@ public class RELAXNGValidator {
         return sMessage;
     }
     
-    public boolean checkAgainstV2(File xmlFile) {
+    public boolean validate(File xmlFile, String version) {
         try {
             // https://stackoverflow.com/questions/1541253/how-to-validate-an-xml-document-using-a-relax-ng-schema-and-jaxp
             System.setProperty(SchemaFactory.class.getName() + ":" + XMLConstants.RELAXNG_NS_URI, "com.thaiopensource.relaxng.jaxp.CompactSyntaxSchemaFactory");
+
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.RELAXNG_NS_URI);
-            Source srcRNG = new StreamSource(Util.getStreamFromResources(getClass().getClassLoader(), "xml2rfcv2.rng"));
+            
+            String rngFilename = "";
+            if (version.toLowerCase().equals("v2")) {
+                rngFilename = "xml2rfcv2.rnc";
+            } else {
+                rngFilename = "xml2rfcv3.rfc7991bis-03.rnc";
+            }
+                        
+            Source srcRNG = new StreamSource(Util.getStreamFromResources(getClass().getClassLoader(), rngFilename));
             Schema schema = factory.newSchema(srcRNG);
             Validator validator = schema.newValidator();
-            
             
             // skip DTD validating 
             //found here: https://moleshole.wordpress.com/2009/10/08/ignore-a-dtd-when-using-a-transformer/
@@ -80,7 +88,7 @@ public class RELAXNGValidator {
             }
             catch (SAXException ex)
             {
-                sMessage = xmlFile + " is not valid because: " + ex.getMessage();
+                sMessage = xmlFile + " is not valid because: " + ex.toString();
             }
         } catch (Exception ex) {
             sMessage = ex.toString();
@@ -88,10 +96,4 @@ public class RELAXNGValidator {
         
         return false;
     }
-    
-    public boolean checkAgainstV3(File xmlFile) {
-        
-        return true;
-    }
-    
 }

@@ -220,7 +220,8 @@ public class rfc2mn {
         if(isValid) {
             System.out.println(fXMLin + " is valid.");
         } else {
-            rngV2Validator.getValidationInfo();
+            String error = rngV2Validator.getValidationInfo();
+            System.out.println(error);
         }
       
         try {

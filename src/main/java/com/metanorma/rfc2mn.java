@@ -214,13 +214,13 @@ public class rfc2mn {
     private void convertrfc2mn(File fXMLin, File fileOut) throws IOException, TransformerException, SAXParseException {
         
         // Checking inputXML against RelaxNG schema
-        RELAXNGValidator rngV2Validator = new RELAXNGValidator();
-        boolean isValid = rngV2Validator.isValid(fXMLin);
+        RELAXNGValidator rngValidator = new RELAXNGValidator();
+        boolean isValid = rngValidator.isValid(fXMLin);
         
         if(isValid) {
             System.out.println(fXMLin + " is valid.");
         } else {
-            String error = rngV2Validator.getValidationInfo();
+            String error = rngValidator.getValidationInfo();
             System.out.println(error);
         }
       

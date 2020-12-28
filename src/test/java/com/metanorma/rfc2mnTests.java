@@ -66,7 +66,7 @@ public class rfc2mnTests {
         ClassLoader classLoader = getClass().getClassLoader();
         String xml = classLoader.getResource("test.v2.xml").getFile();
         RELAXNGValidator rngValidator = new RELAXNGValidator();
-        boolean isValid = rngValidator.checkAgainstV2(new File(xml));
+        boolean isValid = rngValidator.validate(new File(xml), "V2");
 
         assertTrue(isValid);        
     }
@@ -77,7 +77,7 @@ public class rfc2mnTests {
         ClassLoader classLoader = getClass().getClassLoader();
         String xml = classLoader.getResource("antioch.v3.xml").getFile();
         RELAXNGValidator rngValidator = new RELAXNGValidator();
-        boolean isValid = rngValidator.checkAgainstV3(new File(xml));
+        boolean isValid = rngValidator.validate(new File(xml), "V3.7991");
 
         assertTrue(isValid);        
     }

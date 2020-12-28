@@ -1,9 +1,9 @@
-# Source https://tools.ietf.org/id/draft-iab-rfc7991bis-03.txt
+# Source https://tools.ietf.org/rfc/rfc7991.txt
 
    namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
    namespace ns1 = "http://www.w3.org/1999/xlink"
    namespace xi = "http://www.w3.org/2001/XInclude"
-	 
+
    # xml2rfc Version 3 grammar
 
    rfc =
@@ -92,15 +92,14 @@
        address?
      }
 
+
+
    organization =
      element organization {
        attribute xml:base { text }?,
        attribute xml:lang { text }?,
        attribute abbrev { text }?,
        attribute ascii { text }?,
-       attribute asciiAbbrev { text }?,
-       [ a:defaultValue = "true" ]
-       attribute showOnFrontPage { "true" | "false" }?,
        text
      }
 
@@ -119,48 +118,7 @@
      element postal {
        attribute xml:base { text }?,
        attribute xml:lang { text }?,
-       ((city
-         | cityarea
-         | code
-         | country
-         | extaddr
-         | pobox
-         | region
-         | sortingcode
-         | street)*
-        | postalLine+)
-     }
-
-   cityarea =
-     element cityarea {
-       attribute xml:base { text }?,
-       attribute xml:lang { text }?,
-       attribute ascii { text }?,
-       text
-     }
-
-   extaddr =
-     element extaddr {
-       attribute xml:base { text }?,
-       attribute xml:lang { text }?,
-       attribute ascii { text }?,
-       text
-     }
-
-   pobox =
-     element pobox {
-       attribute xml:base { text }?,
-       attribute xml:lang { text }?,
-       attribute ascii { text }?,
-       text
-     }
-
-   sortingcode =
-     element sortingcode {
-       attribute xml:base { text }?,
-       attribute xml:lang { text }?,
-       attribute ascii { text }?,
-       text
+       ((city | code | country | region | street)* | postalLine+)
      }
 
    street =
@@ -178,6 +136,7 @@
        attribute ascii { text }?,
        text
      }
+
 
    region =
      element region {
@@ -225,6 +184,7 @@
        text
      }
 
+
    email =
      element email {
        attribute xml:base { text }?,
@@ -271,6 +231,8 @@
        text
      }
 
+
+
    abstract =
      element abstract {
        attribute xml:base { text }?,
@@ -306,6 +268,8 @@
        section+
      }
 
+
+
    section =
      element section {
        attribute xml:base { text }?,
@@ -320,8 +284,7 @@
        [ a:defaultValue = "false" ]
        attribute removeInRFC { "true" | "false" }?,
        name?,
-       (artset
-        | artwork
+       (artwork
         | aside
         | blockquote
         | dl
@@ -341,20 +304,12 @@
        attribute xml:base { text }?,
        attribute xml:lang { text }?,
        attribute slugifiedName { text }?,
-       (text
-        | bcp14
-        | cref
-        | em
-        | eref
-        | iref
-        | relref
-        | strong
-        | sub
-        | sup
-        | tt
-        | xref)*
+       (text | cref | eref | relref | tt | xref)*
      }
-		 
+
+
+
+
    t =
      element t {
        attribute xml:base { text }?,
@@ -389,8 +344,11 @@
        attribute xml:lang { text }?,
        attribute anchor { xsd:ID }?,
        attribute pn { text }?,
-       (artset | artwork | dl | figure | iref | ol | t | table | ul)*
+       (artwork | dl | figure | iref | \list | ol | t | table | ul)*
      }
+
+
+
 
    blockquote =
      element blockquote {
@@ -400,15 +358,7 @@
        attribute pn { text }?,
        attribute cite { text }?,
        attribute quotedFrom { text }?,
-       ((artset
-         | artwork
-         | dl
-         | figure
-         | ol
-         | sourcecode
-         | t
-         | table
-         | ul)+
+       ((artwork | dl | figure | ol | sourcecode | t | ul)+
         | (text
            | bcp14
            | cref
@@ -448,6 +398,8 @@
        li+
      }
 
+
+
    ul =
      element ul {
        attribute xml:base { text }?,
@@ -467,15 +419,7 @@
        attribute xml:lang { text }?,
        attribute anchor { xsd:ID }?,
        attribute pn { text }?,
-       ((artset
-         | artwork
-         | blockquote
-         | dl
-         | figure
-         | ol
-         | sourcecode
-         | t
-         | ul)+
+       ((artwork | dl | figure | ol | sourcecode | t | ul)+
         | (text
            | bcp14
            | cref
@@ -498,11 +442,13 @@
        [ a:defaultValue = "normal" ]
        attribute spacing { "normal" | "compact" }?,
        [ a:defaultValue = "true" ]
-       attribute newline { "false" | "true" }?,
-       [ a:defaultValue = "0" ] attribute indent { text }?,
+       attribute hanging { "false" | "true" }?,
        attribute pn { text }?,
        (dt, dd)+
      }
+
+
+
 
    dt =
      element dt {
@@ -530,7 +476,7 @@
        attribute xml:lang { text }?,
        attribute anchor { xsd:ID }?,
        attribute pn { text }?,
-       ((artset | artwork | dl | figure | ol | sourcecode | t | ul)+
+       ((artwork | dl | figure | ol | sourcecode | t | ul)+
         | (text
            | bcp14
            | cref
@@ -544,6 +490,8 @@
            | tt
            | xref)+)
      }
+
+
 
    xref =
      element xref {
@@ -591,6 +539,7 @@
        empty
      }
 
+
    cref =
      element cref {
        attribute xml:base { text }?,
@@ -635,6 +584,8 @@
         | tt
         | xref)*
      }
+
+
 
    em =
      element em {
@@ -685,6 +636,7 @@
         | xref)*
      }
 
+
    spanx =
      element spanx {
        attribute xml:base { text }?,
@@ -722,19 +674,21 @@
        name?,
        iref*,
        preamble?,
-       (artset | artwork | sourcecode)+,
+       (artwork | sourcecode)+,
        postamble?
      }
+
+
+
 
    table =
      element table {
        attribute xml:base { text }?,
        attribute xml:lang { text }?,
-       [ a:defaultValue = "center" ]
-       attribute align { "left" | "center" | "right" }?,
        attribute anchor { xsd:ID }?,
        attribute pn { text }?,
        name?,
+       iref*,
        thead?,
        tbody+,
        tfoot?
@@ -759,14 +713,7 @@
         | xref)*
      }
 
-   artset =
-     element artset {
-       attribute xml:base { text }?,
-       attribute xml:lang { text }?,
-       attribute anchor { xsd:ID }?,
-       attribute pn { text }?,
-       artwork+
-     }
+
 
    artwork =
      element artwork {
@@ -786,10 +733,7 @@
        attribute originalSrc { text }?,
        (text* | svg)
      }
-   # TODO: replace with link to RSE site, or provide an inline version
-   # include "svg.rnc"
-   # see SVG schmea at the end of this file
-
+   # https://www.rfc-editor.org/materials/format/SVG-1.2-RFC.rnc
 
    sourcecode =
      element sourcecode {
@@ -820,6 +764,7 @@
        tr+
      }
 
+
    tfoot =
      element tfoot {
        attribute xml:base { text }?,
@@ -845,9 +790,10 @@
        [ a:defaultValue = "0" ] attribute rowspan { text }?,
        [ a:defaultValue = "left" ]
        attribute align { "left" | "center" | "right" }?,
-       ((artset | artwork | dl | figure | ol | sourcecode | t | ul)+
+       ((artwork | dl | figure | ol | sourcecode | t | ul)+
         | (text
            | bcp14
+           | br
            | cref
            | em
            | eref
@@ -860,6 +806,8 @@
            | xref)*)
      }
 
+
+
    th =
      element th {
        attribute xml:base { text }?,
@@ -869,9 +817,10 @@
        [ a:defaultValue = "0" ] attribute rowspan { text }?,
        [ a:defaultValue = "left" ]
        attribute align { "left" | "center" | "right" }?,
-       ((artset | artwork | dl | figure | ol | sourcecode | t | ul)+
+       ((artwork | dl | figure | ol | sourcecode | t | ul)+
         | (text
            | bcp14
+           | br
            | cref
            | em
            | eref
@@ -890,6 +839,7 @@
        attribute xml:lang { text }?,
        (text | cref | eref | iref | spanx | xref)*
      }
+
 
    texttable =
      element texttable {
@@ -934,13 +884,21 @@
        text
      }
 
-   back =
 
+
+   br =
+     element br {
+       attribute xml:base { text }?,
+       attribute xml:lang { text }?,
+       empty
+     }
+
+   back =
      element back {
        attribute xml:base { text }?,
        attribute xml:lang { text }?,
        displayreference*,
-       references,
+       references*,
        section*
      }
 
@@ -960,7 +918,7 @@
        attribute anchor { xsd:ID }?,
        attribute title { text }?,
        name?,
-       (references+ | (reference | referencegroup)*),
+       (reference | referencegroup)*,
 			 xinclude*
      }
 
@@ -971,15 +929,15 @@
        attribute anchor { xsd:ID },
        attribute target { text }?,
        [ a:defaultValue = "true" ]
-       attribute quote-title { "true" | "false" }?,
+       attribute quoteTitle { "true" | "false" }?,
        front,
        (annotation | format | refcontent | seriesInfo)*
      }
 
+
    referencegroup =
      element referencegroup {
        attribute xml:base { text }?,
-       attribute target { text }?,
        attribute xml:lang { text }?,
        attribute anchor { xsd:ID },
        reference+
@@ -1009,6 +967,7 @@
        empty
      }
 
+
    annotation =
      element annotation {
        attribute xml:base { text }?,
@@ -1033,9 +992,8 @@
        attribute xml:base { text }?,
        attribute xml:lang { text }?,
        (text | bcp14 | em | strong | sub | sup | tt)*
-
      }
-
+		 
 # from https://www.rfc-editor.org/materials/format/SVG-1.2-RFC.rnc
 
 #---  SVG 1.2 RFC RNC schema; Nevil Brownlee, Thu 26 Jan 2016 (NZST)
@@ -3016,7 +2974,6 @@ xinclude =
 		attribute accept-language { xsd:string }?,
     attribute parse { "xml" | "text" }?
   }
-
+		 
    start |= rfc
-
 

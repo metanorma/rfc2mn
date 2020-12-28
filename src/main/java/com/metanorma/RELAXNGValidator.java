@@ -35,7 +35,10 @@ public class RELAXNGValidator {
         
         boolean isValid = validate(xmlFile, "V2");
         if (!isValid) {
-            isValid = validate(xmlFile, "V3");
+            isValid = validate(xmlFile, "V3.7991");
+            if (!isValid) {
+                isValid = validate(xmlFile, "V3.7991.draft");
+            }
         }
         
         return isValid;
@@ -55,7 +58,10 @@ public class RELAXNGValidator {
             String rngFilename = "";
             if (version.toLowerCase().equals("v2")) {
                 rngFilename = "xml2rfcv2.rnc";
-            } else {
+            } else if (version.toLowerCase().equals("v3.7991")) {
+                rngFilename = "xml2rfcv3.rfc7991.rnc";
+            } else
+            {
                 rngFilename = "xml2rfcv3.rfc7991bis-03.rnc";
             }
                         

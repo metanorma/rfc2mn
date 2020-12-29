@@ -19,10 +19,13 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -37,6 +40,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.w3c.dom.Document;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -213,46 +217,37 @@ public class rfc2mn {
     
     private void convertrfc2mn(File fXMLin, File fileOut) throws IOException, TransformerException, SAXParseException {
         
-        // Checking inputXML against RelaxNG schema
-        RELAXNGValidator rngValidator = new RELAXNGValidator();
-        boolean isValid = rngValidator.isValid(fXMLin);
         
-        if(isValid) {
-            System.out.println(fXMLin + " is valid.");
-        } else {
-            String error = rngValidator.getValidationInfo();
-            System.out.println(error);
-        }
-      
+        
         try {
             
+            String xmlString = serialize(fXMLin);
+
+            // Checking inputXML against RelaxNG schema
+            RELAXNGValidator rngValidator = new RELAXNGValidator();
+            boolean isValid = rngValidator.isValid(xmlString); // fXMLin
+
+            if(isValid) {
+                System.out.println(fXMLin + " is valid.");
+            } else {
+                String error = rngValidator.getValidationInfo();
+                System.out.println(error);
+            }
+       
             Source srcXSL = null;
             
             String outputFolder = fileOut.getParent();
            
-            // skip validating 
-            //found here: https://moleshole.wordpress.com/2009/10/08/ignore-a-dtd-when-using-a-transformer/
             XMLReader rdr = XMLReaderFactory.createXMLReader();
-            rdr.setEntityResolver(new EntityResolver() {
-		@Override
-		public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                    if (systemId.endsWith(".dtd")) {
-                            StringReader stringInput = new StringReader(" ");
-                            return new InputSource(stringInput);
-                    }
-                    else {
-                            return null; // use default behavior
-                    }
-		}
-            });
-            
+            //rdr.setEntityResolver(entityResolver);
             
             TransformerFactory factory = TransformerFactory.newInstance();
             Transformer transformer = factory.newTransformer();
 
             System.out.println("Transforming...");
             
-            Source src = new SAXSource(rdr, new InputSource(new FileInputStream(fXMLin)));
+            Source src = new SAXSource(rdr, new InputSource(new StringReader(xmlString))); //new FileInputStream(fXMLin)
+            
 
             // linearize XML
             /*Source srcXSLidentity = new StreamSource(Util.getStreamFromResources(getClass().getClassLoader(), "linearize.xsl"));
@@ -319,4 +314,35 @@ public class rfc2mn {
         }
     }       
     
+    public String serialize(File fXMLin) throws Exception {
+        // for xi:include processing
+        DocumentBuilderFactory dbfactory = DocumentBuilderFactory.newInstance();
+        dbfactory.setNamespaceAware(true);
+        dbfactory.setXIncludeAware(true);
+        DocumentBuilder dBuilder = dbfactory.newDocumentBuilder();
+        
+        // skip DTD validating 
+        // found here: https://moleshole.wordpress.com/2009/10/08/ignore-a-dtd-when-using-a-transformer/
+        EntityResolver entityResolver = new EntityResolver() {
+            @Override
+            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                if (systemId.endsWith(".dtd")) {
+                        StringReader stringInput = new StringReader(" ");
+                        return new InputSource(stringInput);
+                }
+                else {
+                        return null; // use default behavior
+                }
+            }
+        };
+        dBuilder.setEntityResolver(entityResolver);
+        
+        Document doc = dBuilder.parse(fXMLin);
+        doc.getDocumentElement().normalize();
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        StreamResult result = new StreamResult(new StringWriter());
+        DOMSource source = new DOMSource(doc);
+        transformer.transform(source, result);
+        return result.getWriter().toString();
+      }
 }

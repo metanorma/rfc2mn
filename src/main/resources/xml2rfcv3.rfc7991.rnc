@@ -2,7 +2,6 @@
 
    namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
    namespace ns1 = "http://www.w3.org/1999/xlink"
-   namespace xi = "http://www.w3.org/2001/XInclude"
 
    # xml2rfc Version 3 grammar
 
@@ -918,8 +917,7 @@
        attribute anchor { xsd:ID }?,
        attribute title { text }?,
        name?,
-       (reference | referencegroup)*,
-			 xinclude*
+       (reference | referencegroup)*
      }
 
    reference =
@@ -2965,15 +2963,6 @@ tbreak =
 
 #---  End of SVG 1.2 RFC RNC schema
 
-xinclude = 
-  element xi:include {
-    attribute href { xsd:anyURI },
-		attribute pointer { xsd:string }?,
-		attribute encoding { xsd:string }?,
-		attribute accept { xsd:string }?,
-		attribute accept-language { xsd:string }?,
-    attribute parse { "xml" | "text" }?
-  }
 		 
    start |= rfc
 

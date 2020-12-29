@@ -61,23 +61,27 @@ public class rfc2mnTests {
 
 
     @Test
-    public void successCheckXMLv2() throws ParseException {
+    public void successCheckXMLv2() throws ParseException, Exception {
         System.out.println(name.getMethodName());
         ClassLoader classLoader = getClass().getClassLoader();
         String xml = classLoader.getResource("test.v2.xml").getFile();
         RELAXNGValidator rngValidator = new RELAXNGValidator();
-        boolean isValid = rngValidator.validate(new File(xml), "V2");
+        String xmlString = new rfc2mn().serialize(new File(xml));
+        //boolean isValid = rngValidator.validate(new File(xml), "V2");
+        boolean isValid = rngValidator.validate(xmlString, "V2");
 
         assertTrue(isValid);        
     }
 
     @Test
-    public void successCheckXMLv3() throws ParseException {
+    public void successCheckXMLv3() throws ParseException, Exception {
         System.out.println(name.getMethodName());
         ClassLoader classLoader = getClass().getClassLoader();
         String xml = classLoader.getResource("antioch.v3.xml").getFile();
         RELAXNGValidator rngValidator = new RELAXNGValidator();
-        boolean isValid = rngValidator.validate(new File(xml), "V3.7991");
+        String xmlString = new rfc2mn().serialize(new File(xml));
+        //boolean isValid = rngValidator.validate(new File(xml), "V3.7991");
+        boolean isValid = rngValidator.validate(xmlString, "V3.7991");
 
         assertTrue(isValid);        
     }

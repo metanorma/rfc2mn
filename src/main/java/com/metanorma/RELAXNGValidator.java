@@ -31,13 +31,13 @@ public class RELAXNGValidator {
         
     }
     
-    public boolean isValid(File xmlFile) {
+    public boolean isValid(String xmlString) {
         
-        boolean isValid = validate(xmlFile, "V2");
+        boolean isValid = validate(xmlString, "V2");
         if (!isValid) {
-            isValid = validate(xmlFile, "V3.7991");
+            isValid = validate(xmlString, "V3.7991");
             if (!isValid) {
-                isValid = validate(xmlFile, "V3.7991.draft");
+                isValid = validate(xmlString, "V3.7991.draft");
             }
         }
         
@@ -48,7 +48,7 @@ public class RELAXNGValidator {
         return sMessage;
     }
     
-    public boolean validate(File xmlFile, String version) {
+    public boolean validate(String xmlString, String version) {
         try {
             // https://stackoverflow.com/questions/1541253/how-to-validate-an-xml-document-using-a-relax-ng-schema-and-jaxp
             System.setProperty(SchemaFactory.class.getName() + ":" + XMLConstants.RELAXNG_NS_URI, "com.thaiopensource.relaxng.jaxp.CompactSyntaxSchemaFactory");
@@ -69,10 +69,25 @@ public class RELAXNGValidator {
             Schema schema = factory.newSchema(srcRNG);
             Validator validator = schema.newValidator();
             
+            /*
             // skip DTD validating 
             //found here: https://moleshole.wordpress.com/2009/10/08/ignore-a-dtd-when-using-a-transformer/
+            
+            EntityResolver entityResolver = new EntityResolver() {
+                @Override
+                public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                    if (systemId.endsWith(".dtd")) {
+                            StringReader stringInput = new StringReader(" ");
+                            return new InputSource(stringInput);
+                    }
+                    else {
+                            return null; // use default behavior
+                    }
+                }
+            };*/
+            
             XMLReader rdr = XMLReaderFactory.createXMLReader();
-            rdr.setEntityResolver(new EntityResolver() {
+            /*rdr.setEntityResolver(new EntityResolver() {
 		@Override
 		public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
                     if (systemId.endsWith(".dtd")) {
@@ -83,9 +98,9 @@ public class RELAXNGValidator {
                             return null; // use default behavior
                     }
 		}
-            });
+            });*/
             
-            Source src = new SAXSource(rdr, new InputSource(new FileInputStream(xmlFile)));
+            Source src = new SAXSource(rdr, new InputSource(new StringReader(xmlString))); //new FileInputStream(xmlFile)
             
             try
             {
@@ -94,7 +109,7 @@ public class RELAXNGValidator {
             }
             catch (SAXException ex)
             {
-                sMessage = xmlFile + " is not valid because: " + ex.toString();
+                sMessage = "XML is not valid because: " + ex.toString();
             }
         } catch (Exception ex) {
             sMessage = ex.toString();

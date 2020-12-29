@@ -278,6 +278,7 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
      element reference {
        attribute anchor { xsd:ID },
        attribute target { text }?,
+       attribute xml:base {text }?,
        front,
        seriesInfo*,
        format*,

@@ -1,14 +1,19 @@
 #!make
-SHELL ?= /bin/bash
+ifeq ($(OS),Windows_NT)
+SHELL := cmd
+else
+SHELL := /bin/bash
+endif
+
+SRCDIR := sources
+DESTDIR := documents
+
+SRCURL := https://www.rfc-editor.org/rfc/
+SRCMASK := rfc865*.xml
 
 JAR_VERSION := $(shell mvn -q -Dexec.executable="echo" -Dexec.args='$${project.version}' --non-recursive exec:exec -DforceStdout)
 JAR_FILE := rfc2mn-$(JAR_VERSION).jar
 
-SRCDIR := src/test/resources
-
-SRCFILE := $(SRCDIR)/antioch.v3.xml
-
-DESTMNADOC := $(patsubst %.xml,%.adoc,$(patsubst src/test/resources/%,documents/%,$(SRCFILE)))
 
 all: target/$(JAR_FILE)
 
@@ -21,8 +26,15 @@ test:
 deploy:
 	mvn --settings settings.xml -Dmaven.test.skip=true clean deploy shade:shade
 
-documents.adoc: target/$(JAR_FILE) documents
-	java -jar $< ${SRCFILE} --output ${DESTMNADOC}
+documents.adoc: target/$(JAR_FILE) sources documents
+ifeq ($(OS),Windows_NT)
+	for /r %%f in ($(SRCDIR)/*.xml) do java -jar target/$(JAR_FILE) $(SRCDIR)/%%~nxf --output $(DESTDIR)/%%~nf.adoc
+else
+	for f in ${SRCDIR}/*.xml; do java -jar target/$(JAR_FILE) $f --output $(DESTDIR)/${f%%.*} ; done
+endif
+
+sources:
+	wget -r -l 1 -nd -A ${SRCMASK} -R rfc-*.xml -P ${SRCDIR} https://www.rfc-editor.org/rfc/
 
 documents:
 	mkdir -p $@
@@ -36,4 +48,4 @@ published: documents.adoc
 	cp -a documents $@/
 
 
-.PHONY: all clean test deploy version target/$(JAR_FILE)
+.PHONY: all clean test deploy version target/$(JAR_FILE) sources

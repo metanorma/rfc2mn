@@ -21,7 +21,7 @@ jobs:
           java-version: 1.8
 
       - name: Setup prerequisites
-        run: choco install --no-progress make gnuwin32-coreutils.install
+        run: choco install --no-progress make gnuwin32-coreutils.install wget
 
       - name: Run tests
         run: |

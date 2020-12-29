@@ -30,7 +30,7 @@ documents.adoc: target/$(JAR_FILE) sources documents
 ifeq ($(OS),Windows_NT)
 	for /r %%f in ($(SRCDIR)/*.xml) do java -jar target/$(JAR_FILE) $(SRCDIR)/%%~nxf --output $(DESTDIR)/%%~nf.adoc
 else
-	for f in ${SRCDIR}/*.xml; do java -jar target/$(JAR_FILE) $f --output $(DESTDIR)/${f%%.*} ; done
+	for file in $(SRCDIR)/*.xml; do java -jar target/$(JAR_FILE) $file --output $(DESTDIR)/${file%%.*} ; done
 endif
 
 sources:

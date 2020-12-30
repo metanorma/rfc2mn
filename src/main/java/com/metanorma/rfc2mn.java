@@ -2,7 +2,6 @@ package com.metanorma;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -13,12 +12,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Comparator;
 
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
@@ -29,9 +26,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -213,14 +207,10 @@ public class rfc2mn {
         
     }
             
-    
-    
+
     private void convertrfc2mn(File fXMLin, File fileOut) throws IOException, TransformerException, SAXParseException {
-        
-        
-        
         try {
-            
+    
             String xmlString = serialize(fXMLin);
 
             // Checking inputXML against RelaxNG schema
@@ -236,8 +226,6 @@ public class rfc2mn {
        
             Source srcXSL = null;
             
-            String outputFolder = fileOut.getParent();
-           
             XMLReader rdr = XMLReaderFactory.createXMLReader();
             //rdr.setEntityResolver(entityResolver);
             

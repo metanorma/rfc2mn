@@ -37,15 +37,24 @@ sources:
 	wget -r -l 1 -nd -A ${SRCMASK} -R rfc-*.xml -P ${SRCDIR} https://www.rfc-editor.org/rfc/
 
 documents:
+ifeq ($(OS),Windows_NT)
+	if not exist $@ mkdir $@
+else
 	mkdir -p $@
+endif
 
 clean:
 	mvn clean
 
-publish: published
-published: documents.adoc
-	mkdir published && \
-	cp -a documents $@/
+publish: documents.adoc published
+	cp -a documents $</
+
+published:
+ifeq ($(OS),Windows_NT)
+	if not exist $@ mkdir $@
+else
+	mkdir -p $@
+endif
 
 
 .PHONY: all clean test deploy version target/$(JAR_FILE) sources

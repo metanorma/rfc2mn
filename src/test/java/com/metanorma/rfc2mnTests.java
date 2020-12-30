@@ -1,9 +1,6 @@
 package com.metanorma;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.apache.commons.cli.ParseException;
 
 import org.junit.BeforeClass;
@@ -85,5 +82,19 @@ public class rfc2mnTests {
 
         assertTrue(isValid);        
     }
+    
+    @Test
+    public void successCheckXMLv3latest() throws ParseException, Exception {
+        System.out.println(name.getMethodName());
+        ClassLoader classLoader = getClass().getClassLoader();
+        String xml = classLoader.getResource("rfc8650.xml").getFile();
+        RELAXNGValidator rngValidator = new RELAXNGValidator();
+        String xmlString = new rfc2mn().serialize(new File(xml));
+        //boolean isValid = rngValidator.validate(new File(xml), "V3.7991");
+        boolean isValid = rngValidator.validate(xmlString, "V3.7991.latest");
+
+        assertTrue(isValid);        
+    }
+    
     
 }

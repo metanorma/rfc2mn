@@ -56,6 +56,8 @@ public class RELAXNGValidator {
                 rngFilename = "xml2rfcv3.rng";
             }
             
+            
+            
             // https://stackoverflow.com/questions/1541253/how-to-validate-an-xml-document-using-a-relax-ng-schema-and-jaxp
             if (rngFilename.toLowerCase().endsWith(".rnc")) { // Relax NG compact
                 System.setProperty(SchemaFactory.class.getName() + ":" + XMLConstants.RELAXNG_NS_URI, "com.thaiopensource.relaxng.jaxp.CompactSyntaxSchemaFactory");
@@ -63,7 +65,13 @@ public class RELAXNGValidator {
                 System.setProperty(SchemaFactory.class.getName() + ":" + XMLConstants.RELAXNG_NS_URI, "com.thaiopensource.relaxng.jaxp.XMLSyntaxSchemaFactory");
             }
             
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.RELAXNG_NS_URI);            
+            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.RELAXNG_NS_URI);
+            if (rngFilename.toLowerCase().endsWith(".rng")) {
+                // associate the schema factory with the resource resolver, which is responsible for resolving the imported RNG's
+                factory.setResourceResolver(new ResourceResolver(""));
+            }
+            
+            
             
             Source srcRNG = new StreamSource(Util.getStreamFromResources(getClass().getClassLoader(), rngFilename));
             Schema schema = factory.newSchema(srcRNG);

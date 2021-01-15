@@ -828,9 +828,11 @@
 	<xsl:template match="text()">
 		<xsl:variable name="firstchar" select="substring(., 1,1)"/>
 		<xsl:variable name="lastchar" select="substring(., string-length(.),1)"/>
-		<xsl:if test="preceding-sibling::* and ($firstchar = ' ' or $firstchar = '&#xa;' or $firstchar = '&#xd;')"><xsl:text> </xsl:text></xsl:if>
-		<xsl:value-of select="normalize-space(.)"/>
-		<xsl:if test="following-sibling::* and ($lastchar = ' ' or $lastchar = '&#xa;' or $lastchar = '&#xd;')"><xsl:text> </xsl:text></xsl:if>
+		<xsl:variable name="normalized_text" select="normalize-space(.)"/>
+		<xsl:if test="preceding-sibling::* and ($firstchar = ' ' or $firstchar = '&#xa;' or $firstchar = '&#xd;') and $normalized_text != ''"><xsl:text> </xsl:text></xsl:if>
+		<xsl:value-of select="$normalized_text"/>
+		<xsl:if test="preceding-sibling::* and following-sibling::* and $normalized_text = '' and not($normalized_text = .)"><xsl:text> </xsl:text></xsl:if>
+		<xsl:if test="following-sibling::* and ($lastchar = ' ' or $lastchar = '&#xa;' or $lastchar = '&#xd;') and $normalized_text != ''"><xsl:text> </xsl:text></xsl:if>
 	</xsl:template>
 	
 	
@@ -1350,7 +1352,11 @@
 	<xsl:template match="li/text()">
 		<xsl:choose>
 			<xsl:when test=". = '&#xd;' or . = '&#xa;' or . = '&#xd;&#xa;'"></xsl:when>
-			<xsl:otherwise><xsl:value-of select="."/></xsl:otherwise>
+			<xsl:otherwise>
+				<xsl:variable name="text" select="normalize-space(.)"/>
+				<xsl:value-of select="$text"/>
+				<xsl:if test="$text = ''"> </xsl:if>
+			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
 

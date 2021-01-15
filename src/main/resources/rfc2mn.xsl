@@ -771,12 +771,16 @@
 	<!-- References -->
 	<!-- ================ -->
 	
-	<xsl:template match="references">
+	<xsl:template match="references[references]" priority="3">
+		<xsl:apply-templates />
+	</xsl:template>
+	
+	<xsl:template match="references" priority="2">
 		<xsl:text>&#xa;</xsl:text>
 		<xsl:text>[bibliography]&#xa;</xsl:text>
 		<xsl:apply-templates select="@title" mode="title"/>
 		<xsl:apply-templates select="name" mode="title"/>
-		<xsl:if test="not(@title)"><xsl:text>== References&#xa;</xsl:text></xsl:if>
+		<xsl:if test="not(@title) and not(name)"><xsl:text>== References&#xa;</xsl:text></xsl:if>
 		<xsl:text>++++</xsl:text>
 		<xsl:text>&#xa;</xsl:text>
 		<xsl:apply-templates />
@@ -790,7 +794,7 @@
 	<xsl:template match="references/name" mode="title">
 		<xsl:text>== </xsl:text><xsl:apply-templates /><xsl:text>&#xa;</xsl:text>
 	</xsl:template>
-	<xsl:template match="references/name"/>
+	<xsl:template match="references/name" priority="2"/>
 	
 	<xsl:template match="references//*">
 		<xsl:text>&lt;</xsl:text>

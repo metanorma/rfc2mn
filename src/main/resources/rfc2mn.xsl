@@ -912,7 +912,18 @@
 		</xsl:variable>
 		
 		<xsl:if test="$isFigureWrapper = 'true'">
-			<xsl:if test="@suppress-title or artwork/@align or artwork/@alt">
+		
+			<xsl:variable name="figure_settings">
+				<xsl:for-each select="artwork/@align | artwork/@alt | @suppress-title">
+					<xsl:apply-templates select="."/>
+					<xsl:if test="position() != last()">,</xsl:if>
+				</xsl:for-each>
+			</xsl:variable>
+			<xsl:if test="$figure_settings != ''">
+				<xsl:text>[</xsl:text><xsl:value-of select="$figure_settings"/><xsl:text>]&#xa;</xsl:text>
+			</xsl:if>
+		
+			<!-- <xsl:if test="@suppress-title or artwork/@align or artwork/@alt">
 				<xsl:text>[</xsl:text>
 				<xsl:for-each select="artwork/@align | artwork/@alt | @suppress-title">
 					<xsl:apply-templates select="."/>
@@ -920,7 +931,7 @@
 				</xsl:for-each>
 				<xsl:text>]</xsl:text>
 				<xsl:text>&#xa;</xsl:text>
-			</xsl:if>
+			</xsl:if> -->
 			<xsl:apply-templates select="@title" mode="title"/>
 			<xsl:apply-templates select="name" mode="title"/>
 			<xsl:text>====</xsl:text>
@@ -964,19 +975,20 @@
 	</xsl:template>
 	
 	<xsl:template match="artset">
+		<xsl:apply-templates select="@anchor"/>
 		<xsl:apply-templates select="artwork"/>
 	</xsl:template>
 	
 	<xsl:template match="artwork">
 		<!-- <xsl:apply-templates select="@name"/> -->
-		<xsl:variable name="artwork_type">
-			<xsl:choose>
+		<xsl:variable name="artwork_type">figure</xsl:variable>
+			<!-- <xsl:choose>
 				<xsl:when test="2 = 3">figure</xsl:when>
 				<xsl:otherwise>sourcecode</xsl:otherwise>
 			</xsl:choose>
-		</xsl:variable>
+		</xsl:variable> -->
 		
-		
+		<xsl:apply-templates select="@anchor"/>
 		
 		<xsl:choose>
 			<xsl:when test="$artwork_type = 'sourcecode'">
@@ -1004,7 +1016,7 @@
 				</xsl:if>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:for-each select="@align | @alt | ../@type">
+				<xsl:for-each select="@align | @alt | ../@type | @type">
 					<xsl:if test="position() = 1">[</xsl:if>
 					<xsl:apply-templates select="."/>
 					<xsl:if test="position() != last()">,</xsl:if>
@@ -1012,8 +1024,18 @@
 				</xsl:for-each>
 				<xsl:if test="count(node()) != 0">
 					<xsl:text>....</xsl:text>
-					<xsl:apply-templates />
+					<xsl:choose>
+						<xsl:when test="@type = 'svg' and svg:svg">
+							<xsl:apply-templates mode="svg"/>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:apply-templates />
+						</xsl:otherwise>
+					</xsl:choose>
 					<xsl:text>....</xsl:text>
+					<xsl:if test="following-sibling::artwork">
+						<xsl:text>&#xa;</xsl:text>
+					</xsl:if>
 				</xsl:if>
 			</xsl:otherwise>
 		</xsl:choose>
@@ -1060,8 +1082,10 @@
 	
 	
 	<xsl:template match="artwork/@name">
-		<xsl:text>.</xsl:text><xsl:value-of select="."/>
-		<xsl:text>&#xa;</xsl:text>
+		<xsl:if test=". != ''">
+			<xsl:text>.</xsl:text><xsl:value-of select="."/>
+			<xsl:text>&#xa;</xsl:text>
+		</xsl:if>
 	</xsl:template>
 	
 	

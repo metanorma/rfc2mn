@@ -7,6 +7,7 @@
 	xmlns:exsl="http://exslt.org/common"
 	xmlns:l="urn:local"
 	xmlns:xalan="http://xml.apache.org/xalan" 
+	xmlns:svg="http://www.w3.org/2000/svg"
 	exclude-result-prefixes="xsl date str exsl l">
 
 	<!-- Metanorma-IETF: https://www.metanorma.com/author/ietf/topics/markup-v2/, https://www.metanorma.com/author/ietf/topics/markup/ -->
@@ -900,7 +901,7 @@
 		<xsl:text> +&#xa;</xsl:text>
 	</xsl:template>
 	
-	<xsl:template match="figure">
+	<xsl:template match="figure" name="figure">
 		<xsl:text>&#xa;</xsl:text>
 		<xsl:apply-templates select="@anchor"/>
 		
@@ -927,7 +928,7 @@
 			<xsl:apply-templates select="preamble"/>
 		</xsl:if>
 		
-		<xsl:apply-templates select="artwork | sourcecode"/>
+		<xsl:apply-templates select="artset | artwork | sourcecode"/>
 		
 		<xsl:if test="normalize-space(artwork/text()) = '' and artwork/@src and not(sourcecode)">
 			<xsl:text>image::</xsl:text><xsl:value-of select="artwork/@src"/>
@@ -962,6 +963,10 @@
 		<xsl:text>type=</xsl:text><xsl:value-of select="."/>
 	</xsl:template>
 	
+	<xsl:template match="artset">
+		<xsl:apply-templates select="artwork"/>
+	</xsl:template>
+	
 	<xsl:template match="artwork">
 		<!-- <xsl:apply-templates select="@name"/> -->
 		<xsl:variable name="artwork_type">
@@ -984,8 +989,18 @@
 				<xsl:text>&#xa;</xsl:text>
 				<xsl:if test="count(node()) != 0">
 					<xsl:text>----</xsl:text>
-					<xsl:apply-templates />
+					<xsl:choose>
+						<xsl:when test="@type = 'svg' and svg:svg">
+							<xsl:apply-templates mode="svg"/>
+						</xsl:when>
+						<xsl:otherwise>
+							<xsl:apply-templates />
+						</xsl:otherwise>
+					</xsl:choose>
 					<xsl:text>----</xsl:text>
+					<xsl:if test="following-sibling::artwork">
+						<xsl:text>&#xa;</xsl:text>
+					</xsl:if>
 				</xsl:if>
 			</xsl:when>
 			<xsl:otherwise>
@@ -1005,6 +1020,44 @@
 
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
+	
+	<!-- =================== -->
+	<!-- artwork /svg processing -->
+	<!-- =================== -->
+	<xsl:template match="artwork/svg:svg" mode="svg" priority="2">
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:text>&lt;svg xmlns="http://www.w3.org/2000/svg"</xsl:text>
+		<xsl:apply-templates select="@*" mode="svg"/>
+		<xsl:text>&gt;</xsl:text>
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:apply-templates mode="svg"/>
+		<xsl:text>&lt;/svg&gt;&#xa;</xsl:text>
+	</xsl:template>
+	
+	<xsl:template match="artwork//*" mode="svg">
+		<xsl:text>&lt;</xsl:text>
+		<xsl:value-of select="name()"/>
+		<xsl:apply-templates select="@*" mode="svg"/>
+		<xsl:text>&gt;</xsl:text>
+		<xsl:apply-templates mode="svg"/>
+		<xsl:text>&lt;/</xsl:text>
+		<xsl:value-of select="name()"/>
+		<xsl:text>&gt;&#xa;</xsl:text>
+	</xsl:template>
+	
+	<xsl:template match="artwork//*/@*" mode="svg">
+		<xsl:text> </xsl:text>
+		<xsl:value-of select="name()"/>
+		<xsl:text>="</xsl:text>
+		<xsl:value-of select="."/>
+		<xsl:text>"</xsl:text>
+	</xsl:template>
+	
+	<xsl:template match="artwork//text()" mode="svg"><xsl:value-of select="." /></xsl:template>
+	<!-- =================== -->
+	<!-- END of artwork /svg processing -->
+	<!-- =================== -->
+	
 	
 	<xsl:template match="artwork/@name">
 		<xsl:text>.</xsl:text><xsl:value-of select="."/>

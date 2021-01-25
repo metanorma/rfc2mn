@@ -976,8 +976,10 @@
 			</xsl:if> -->
 			<xsl:apply-templates select="@title" mode="title"/>
 			<xsl:apply-templates select="name" mode="title"/>
-			<xsl:text>====</xsl:text>
-			<xsl:text>&#xa;</xsl:text>
+			<xsl:if test="count(artwork/node()) = 0">
+				<xsl:text>====</xsl:text>
+				<xsl:text>&#xa;</xsl:text>
+			</xsl:if>
 			<xsl:apply-templates select="preamble"/>
 		</xsl:if>
 		
@@ -993,8 +995,10 @@
 		
 		<xsl:if test="$isFigureWrapper = 'true'">
 			<xsl:apply-templates select="postamble"/>
-			<xsl:text>====</xsl:text>
-			<xsl:text>&#xa;</xsl:text>
+			<xsl:if test="count(artwork/node()) = 0">
+				<xsl:text>====</xsl:text>
+				<xsl:text>&#xa;</xsl:text>
+			</xsl:if>
 		</xsl:if>
 	</xsl:template>
 		

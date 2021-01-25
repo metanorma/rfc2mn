@@ -8,7 +8,10 @@
 	xmlns:l="urn:local"
 	xmlns:xalan="http://xml.apache.org/xalan" 
 	xmlns:svg="http://www.w3.org/2000/svg"
-	exclude-result-prefixes="xsl date str exsl l">
+	xmlns:mml="http://www.w3.org/1998/Math/MathML" 
+	xmlns:java="http://xml.apache.org/xalan/java" 
+	xmlns:java_char="http://xml.apache.org/xalan/java/java.lang.Character" 
+	exclude-result-prefixes="xsl date str exsl l java java_char">
 
 	<!-- Metanorma-IETF: https://www.metanorma.com/author/ietf/topics/markup-v2/, https://www.metanorma.com/author/ietf/topics/markup/ -->
 
@@ -24,8 +27,12 @@
 		<xsl:if test="starts-with(/rfc/@docName, 'draft-')">true</xsl:if>
 	</xsl:variable>
 
+	<xsl:variable name="linearizedXML">
+		<xsl:apply-templates mode="linearize"/>
+	</xsl:variable>
+
 	<xsl:template match="/">
-		<xsl:apply-templates />
+		<xsl:apply-templates select="xalan:nodeset($linearizedXML)/*"/>
 	</xsl:template>
 
 	<xsl:template match="rfc">
@@ -861,37 +868,72 @@
 		<xsl:text>keep-with-previous=</xsl:text><xsl:value-of select="."/>
 	</xsl:template>
 	
+	<!-- italic -->
 	<xsl:template match="spanx[not(@style)] | spanx[@style = 'emph'] | em">
 		<xsl:text>_</xsl:text>
 		<xsl:apply-templates/>
 		<xsl:text>_</xsl:text>
 	</xsl:template>
+	<xsl:template match="spanx2[not(@style)] | spanx2[@style = 'emph'] | em2">
+		<xsl:text>__</xsl:text>
+		<xsl:apply-templates/>
+		<xsl:text>__</xsl:text>
+	</xsl:template>
 	
+	<!-- bold -->
 	<xsl:template match="spanx[@style = 'strong'] | strong">
 		<xsl:text>*</xsl:text>
 		<xsl:apply-templates/>
 		<xsl:text>*</xsl:text>
 	</xsl:template>
+	<xsl:template match="spanx2[@style = 'strong'] | strong2">
+		<xsl:text>**</xsl:text>
+		<xsl:apply-templates/>
+		<xsl:text>**</xsl:text>
+	</xsl:template>
 	
+	<!-- monospaced -->
 	<xsl:template match="spanx[@style = 'verb'] | tt">
 		<xsl:text>`</xsl:text>
 		<xsl:apply-templates/>
 		<xsl:text>`</xsl:text>
 	</xsl:template>
+	<xsl:template match="spanx2[@style = 'verb'] | tt2">
+		<xsl:text>``</xsl:text>
+		<xsl:apply-templates/>
+		<xsl:text>``</xsl:text>
+	</xsl:template>
 	
+	<!-- subscript -->
 	<xsl:template match="sub">
 		<xsl:text>~</xsl:text>
 		<xsl:apply-templates/>
 		<xsl:text>~</xsl:text>
 	</xsl:template>
+	<xsl:template match="sub2">
+		<xsl:text>~~</xsl:text>
+		<xsl:apply-templates/>
+		<xsl:text>~~</xsl:text>
+	</xsl:template>
 
+	<!-- superscript -->
 	<xsl:template match="sup">
 		<xsl:text>^</xsl:text>
 		<xsl:apply-templates/>
 		<xsl:text>^</xsl:text>
+	</xsl:template>
+	<xsl:template match="sup2">
+		<xsl:text>^^</xsl:text>
+		<xsl:apply-templates/>
+		<xsl:text>^^</xsl:text>
 	</xsl:template>	
 	
 	<xsl:template match="bcp14">
+		<xsl:text>[bcp14]#</xsl:text>
+		<xsl:apply-templates/>
+		<xsl:text>#</xsl:text>
+	</xsl:template>
+	<xsl:template match="bcp142">
 		<xsl:text>[bcp14]#</xsl:text>
 		<xsl:apply-templates/>
 		<xsl:text>#</xsl:text>
@@ -1858,5 +1900,116 @@
 		</xsl:if>
 	</xsl:template>
 
+	<!-- ======================== -->
+	<!-- XML Linearization -->
+	<!-- ======================== -->
+	<xsl:template match="@*|node()" mode="linearize">
+		<xsl:copy>
+				<xsl:apply-templates select="@*|node()" mode="linearize"/>
+		</xsl:copy>
+	</xsl:template>
+	
+	<xsl:template match="text()[not(parent::figure or parent::artset or parent::artwork or parent::texttable or parent::sourcecode or parent::code or parent::mml:* or
+	parent::strong or parent::em or parent::spanx or parent::sub or parent::sup or parent::bcp14 or parent::tt)]" mode="linearize">
+		<xsl:choose>
+			<xsl:when test="contains(., '&#xa;')">
+				<xsl:variable name="text_" select="translate(., '&#xa;&#x9;', '  ')"/>
+				<xsl:variable name="text" select="java:replaceAll(java:java.lang.String.new($text_),' +',' ')"/>
+				<xsl:if test="normalize-space($text) != ''">
+					<xsl:call-template name="trimSpaces">
+						<xsl:with-param name="text" select="$text"/>
+					</xsl:call-template>
+				</xsl:if>
+			</xsl:when>
+			<xsl:otherwise>
+				<!-- <xsl:value-of select="."/> -->
+				<xsl:call-template name="trimSpaces"/>
+			</xsl:otherwise>
+		</xsl:choose>		
+	</xsl:template>
+	
+	<xsl:template name="trimSpaces">
+		<xsl:param name="text" select="."/>
+		
+		<xsl:variable name="text_lefttrim">
+			<xsl:choose>
+				<xsl:when test="not(preceding-sibling::*) and not(preceding-sibling::comment())">
+					<xsl:value-of select="java:replaceAll(java:java.lang.String.new($text),'^\s+','')"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="$text"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
+		
+		<xsl:variable name="text_righttrim">
+			<xsl:choose>
+				<xsl:when test="not(following-sibling::*) and not(following-sibling::comment())">
+					<xsl:value-of select="java:replaceAll(java:java.lang.String.new($text_lefttrim),'\s+$','')"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="$text_lefttrim"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
+		<xsl:value-of select="$text_righttrim"/>
+	</xsl:template>
+	
+	<xsl:template match="strong | em | spanx | sub |  sup | bcp14 | tt" mode="linearize">
+		<xsl:call-template name="processUnconstrainedFormatting"/>
+	</xsl:template>
+	
+	<xsl:template name="processUnconstrainedFormatting">
+		<xsl:variable name="unconstrained_formatting"><xsl:call-template name="is_unconstrained_formatting"/></xsl:variable>
+		<xsl:choose>
+			<xsl:when test="$unconstrained_formatting = 'true'">
+				<!-- create element b2, i2, sup2, etc. -->
+				<xsl:element name="{local-name()}2">
+					<xsl:apply-templates select="@*" mode="linearize"/>
+					<xsl:apply-templates  mode="linearize"/>
+				</xsl:element>
+			</xsl:when>
+			<xsl:otherwise>
+				<!-- copy 'as is' -->
+				<xsl:copy-of select="."/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	
+	<!-- https://docs.asciidoctor.org/asciidoc/latest/text/ -->
+	<!-- Unconstrained formatting pair -->
+	<xsl:template name="is_unconstrained_formatting">
+	
+		<xsl:variable name="prev_text" select="preceding-sibling::node()[1]"/>
+		<xsl:variable name="prev_char" select="substring($prev_text, string-length($prev_text))"/>
+		
+		<xsl:variable name="next_text" select="following-sibling::node()[1]"/>
+		<xsl:variable name="next_char" select="substring($next_text, 1, 1)"/>
+		
+		<xsl:variable name="text" select="."/>
+		<xsl:variable name="first_char" select="substring($text, 1, 1)"/>
+		<xsl:variable name="last_char" select="substring($text, string-length($text))"/>
+		
+		<xsl:choose>
+			<!--  a blank space does not precede the text to format -->
+			<xsl:when test="$prev_char != '' and $prev_char != ' '">true</xsl:when>
+			
+			<!-- a blank space or punctuation mark (, ; " . ? or !) does not directly follow the text -->
+			<xsl:when test="$next_char != '' and $next_char != ' ' and 
+													$next_char != ',' and $next_char != ';' and $next_char != '&quot;' and $next_char != '.' and $next_char != '?' and $next_char != '!'">true</xsl:when>
+													
+			<!-- text does not start or end with a word character -->
+			<xsl:when test="java_char:isLetter($first_char) != 'true' or java_char:isLetter($last_char) != 'true'">true</xsl:when>
+			
+			<xsl:otherwise>false</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	
+	<!-- ======================== -->
+	<!-- End XML Linearization -->
+	<!-- ======================== -->
+	
 
 </xsl:stylesheet>

@@ -789,9 +789,10 @@
 		<xsl:apply-templates select="@title" mode="title"/>
 		<xsl:apply-templates select="name" mode="title"/>
 		<xsl:if test="not(@title) and not(name)"><xsl:text>== References&#xa;</xsl:text></xsl:if>
+		<xsl:apply-templates select="referencegroup"/>
 		<xsl:text>++++</xsl:text>
 		<xsl:text>&#xa;</xsl:text>
-		<xsl:apply-templates />
+		<xsl:apply-templates select="node()[not(local-name() = 'referencegroup')]"/>
 		<xsl:text>++++</xsl:text>
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
@@ -824,6 +825,32 @@
 	</xsl:template>
 	
 	<xsl:template match="references//text()"><xsl:value-of select="." /></xsl:template>
+	
+	<xsl:template match="references/referencegroup">
+		<xsl:apply-templates select="@anchor"/>
+		<xsl:text>[%bibitem]</xsl:text>
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:text>== {blank}</xsl:text>
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:text>link: </xsl:text>
+		<xsl:value-of select="@target"/>
+		<xsl:text>&#xa;</xsl:text>
+		<xsl:apply-templates />
+	</xsl:template>
+	
+	<xsl:template match="referencegroup/@anchor" priority="2">
+		<xsl:text>[[</xsl:text><xsl:value-of select="."/><xsl:text>]]</xsl:text>
+		<xsl:text>&#xa;</xsl:text>
+	</xsl:template>
+	
+	<xsl:template match="referencegroup/reference">
+		<xsl:text>relation::&#xa;</xsl:text>
+		<xsl:text>relation.type:: includes&#xa;</xsl:text>
+		<xsl:text>relation.bibitem.docid.type:: IETF&#xa;</xsl:text>
+		<xsl:text>relation.bibitem.docid.id:: </xsl:text>
+		<xsl:value-of select="@anchor"/>
+		<xsl:text>&#xa;</xsl:text>
+	</xsl:template>
 	
 	<!-- ================ -->
 	<!-- END References -->
@@ -1886,6 +1913,10 @@
 	<!-- ================ -->
 	<!-- End of relref processing -->
 	<!-- ================ -->
+	
+	<xsl:template match="contact">
+		<xsl:value-of select="@fullname"/>
+	</xsl:template>
 	
 	<!-- ================ -->
 	<!-- V3 End of Elements processing -->

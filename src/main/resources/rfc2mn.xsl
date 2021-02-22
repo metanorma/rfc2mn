@@ -1242,16 +1242,16 @@
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	
-	<xsl:template match="iref[@item and not(@subitem)]">
+	<xsl:template match="iref[@item]">
+		<xsl:if test="@subitem">(</xsl:if>
 		<xsl:text>((</xsl:text>
+		<xsl:if test="@primary = 'true'">primary:</xsl:if>
 		<xsl:value-of select="@item"/>
+		<xsl:if test="@subitem">
+			<xsl:text>, </xsl:text><xsl:value-of select="@subitem"/>
+		</xsl:if>
 		<xsl:text>))</xsl:text>
-	</xsl:template>
-	
-	<xsl:template match="iref[@item and @subitem]">
-		<xsl:text>(((</xsl:text>
-		<xsl:value-of select="@item"/><xsl:text>, </xsl:text><xsl:value-of select="@subitem"/>
-		<xsl:text>)))</xsl:text>
+		<xsl:if test="@subitem">)</xsl:if>
 	</xsl:template>
 
 	<xsl:template match="xref">

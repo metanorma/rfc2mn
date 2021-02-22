@@ -1257,15 +1257,24 @@
 	<xsl:template match="xref">
 		<xsl:text>&lt;&lt;</xsl:text>
 		<xsl:value-of select="@target"/>
+		<xsl:variable name="displayreference_to" select="/rfc/back/displayreference[@target = current()/@target]/@to"/>
 		<xsl:choose>
 			<xsl:when test="@format">
 				<xsl:text>,format=</xsl:text><xsl:value-of select="@format"/>
-				<xsl:if test="normalize-space(.) != ''">
-					<xsl:text>: </xsl:text><xsl:value-of select="."/>
-				</xsl:if>
+				<xsl:choose>
+					<xsl:when test="normalize-space(.) != ''">
+						<xsl:text>: </xsl:text><xsl:value-of select="."/>
+					</xsl:when>
+					<xsl:when test="normalize-space($displayreference_to) != ''">
+						<xsl:text>: </xsl:text><xsl:value-of select="$displayreference_to"/>
+					</xsl:when>
+				</xsl:choose>
 			</xsl:when>
 			<xsl:when test="normalize-space(.) != ''">
 				<xsl:text>,</xsl:text><xsl:value-of select="."/>
+			</xsl:when>
+			<xsl:when test="normalize-space($displayreference_to) != ''">
+				<xsl:text>,</xsl:text><xsl:value-of select="$displayreference_to"/>
 			</xsl:when>
 		</xsl:choose>
 		<xsl:text>&gt;&gt;</xsl:text>

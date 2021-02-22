@@ -1750,6 +1750,7 @@
 		<xsl:text>&#xa;</xsl:text>
 		<xsl:apply-templates select="@anchor"/>
 		<xsl:apply-templates select="name" mode="title"/>
+		<xsl:apply-templates select="@align"/>
 		<xsl:text>|===</xsl:text>
 		<xsl:text>&#xa;</xsl:text>
 		
@@ -1758,6 +1759,11 @@
 		<xsl:text>|===</xsl:text>
 		<xsl:text>&#xa;</xsl:text>
 		
+	</xsl:template>
+
+	<xsl:template match="table/@align">
+		<xsl:text>[align=</xsl:text><xsl:value-of select="."/><xsl:text>]</xsl:text>
+		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="table/name" mode="title">

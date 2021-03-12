@@ -358,38 +358,68 @@
 
 	<xsl:template name="getAuthor">
 		<xsl:for-each select="/rfc/front/author">
-			<xsl:variable name="sfx">
-				<xsl:if test="position() &gt; 1">_<xsl:value-of select="position()"/></xsl:if>
-			</xsl:variable>
-			<xsl:apply-templates select="@fullname">
-				<xsl:with-param name="sfx" select="$sfx"/>
-			</xsl:apply-templates>
-			<xsl:apply-templates select="@initials">
-				<xsl:with-param name="sfx" select="$sfx"/>
-			</xsl:apply-templates>
-			<xsl:apply-templates select="@surname">
-				<xsl:with-param name="sfx" select="$sfx"/>
-			</xsl:apply-templates>
-			<xsl:apply-templates select="@role">
-				<xsl:with-param name="sfx" select="$sfx"/>
-			</xsl:apply-templates>
-			<xsl:apply-templates select="organization">
-				<xsl:with-param name="sfx" select="$sfx"/>
-			</xsl:apply-templates>
-			<xsl:apply-templates select="address">
-				<xsl:with-param name="sfx" select="$sfx"/>
-			</xsl:apply-templates>
+			<xsl:call-template name="processAuthor"/>
+		</xsl:for-each>
+		<xsl:variable name="front_authors">
+			<xsl:for-each select="/rfc/front/author">
+				<xsl:copy-of select="."/>
+			</xsl:for-each>
+		</xsl:variable>
+		<xsl:variable name="back_authors">
+			<section>
+				<xsl:for-each select="/rfc/back/section/author">
+					<xsl:if test="not(xalan:nodeset($front_authors)//author[. = current()/. and @fullname = current()/@fullname])"><!-- if there is new author in annex -->
+						<xsl:copy-of select="."/>
+					</xsl:if>
+				</xsl:for-each>
+			</section>
+		</xsl:variable>
+		<xsl:variable name="count_front_authors" select="count(/rfc/front/author)"/>
+
+		<xsl:for-each select="xalan:nodeset($back_authors)//author">
+			<xsl:variable name="pos" select="position() + $count_front_authors"/>
+			<xsl:call-template name="processAuthor">
+				<xsl:with-param name="pos" select="$pos"/>
+			</xsl:call-template>
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template match="/rfc/front/author/@fullname">
+	<xsl:template name="processAuthor">
+		<xsl:param name="pos" select="0"/>
+		<xsl:variable name="sfx">
+			<xsl:choose>
+				<xsl:when test="$pos != 0">_<xsl:value-of select="$pos"/></xsl:when>
+				<xsl:when test="position() &gt; 1">_<xsl:value-of select="position()"/></xsl:when>
+			</xsl:choose>
+		</xsl:variable>
+		<xsl:apply-templates select="@fullname">
+			<xsl:with-param name="sfx" select="$sfx"/>
+		</xsl:apply-templates>
+		<xsl:apply-templates select="@initials">
+			<xsl:with-param name="sfx" select="$sfx"/>
+		</xsl:apply-templates>
+		<xsl:apply-templates select="@surname">
+			<xsl:with-param name="sfx" select="$sfx"/>
+		</xsl:apply-templates>
+		<xsl:apply-templates select="@role">
+			<xsl:with-param name="sfx" select="$sfx"/>
+		</xsl:apply-templates>
+		<xsl:apply-templates select="organization">
+			<xsl:with-param name="sfx" select="$sfx"/>
+		</xsl:apply-templates>
+		<xsl:apply-templates select="address">
+			<xsl:with-param name="sfx" select="$sfx"/>
+		</xsl:apply-templates>
+	</xsl:template>
+
+	<xsl:template match="/rfc/front/author/@fullname | section/author/@fullname">
 		<xsl:param name="sfx"/>
 		<xsl:text>:fullname</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
 		<xsl:value-of select="."/>
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/@initials">
+	<xsl:template match="/rfc/front/author/@initials | section/author/@initials">
 		<xsl:param name="sfx"/>
 		<!-- <xsl:text>:forename_initials</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
 		<xsl:text>:initials</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
@@ -397,7 +427,7 @@
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/@surname">
+	<xsl:template match="/rfc/front/author/@surname | section/author/@surname">
 		<xsl:param name="sfx"/>
 		<!-- <xsl:text>:lastname</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
 		<xsl:text>:surname</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
@@ -405,7 +435,7 @@
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/@role">
+	<xsl:template match="/rfc/front/author/@role | section/author/@role">
 		<xsl:param name="sfx"/>
 		<xsl:if test=". != 'author'">
 			<xsl:text>:role</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
@@ -414,7 +444,7 @@
 		</xsl:if>
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/organization">
+	<xsl:template match="/rfc/front/author/organization | section/author/organization">
 		<xsl:param name="sfx"/>
 		<!-- <xsl:text>:organization</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
 		<xsl:text>:affiliation</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
@@ -425,7 +455,7 @@
 		</xsl:apply-templates>
 	</xsl:template>
 
-	<xsl:template match="/rfc/front/author/organization/@abbrev">
+	<xsl:template match="/rfc/front/author/organization/@abbrev | section/author/organization/@abbrev">
 		<xsl:param name="sfx"/>
 		<!-- <xsl:text>:organization_abbrev</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
 		<xsl:text>:affiliation_abbrev</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
@@ -433,7 +463,7 @@
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 
-	<xsl:template match="/rfc/front/author/address">
+	<xsl:template match="/rfc/front/author/address | section/author/address">
 		<xsl:param name="sfx"/>	
 		<xsl:apply-templates select="email">
 			<xsl:with-param name="sfx" select="$sfx"/>
@@ -452,35 +482,35 @@
 		</xsl:apply-templates>
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/address/email">
+	<xsl:template match="/rfc/front/author/address/email | section/author/address/email">
 		<xsl:param name="sfx"/>
 		<xsl:text>:email</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
 		<xsl:apply-templates />
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/address/facsimile">
+	<xsl:template match="/rfc/front/author/address/facsimile | section/author/address/facsimile">
 		<xsl:param name="sfx"/>
 		<xsl:text>:fax</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
 		<xsl:apply-templates />
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/address/uri">
+	<xsl:template match="/rfc/front/author/address/uri | section/author/address/uri">
 		<xsl:param name="sfx"/>
 		<!-- <xsl:text>:uri</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
 		<xsl:text>:contributor-uri</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
 		<xsl:apply-templates />
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
-	<xsl:template match="/rfc/front/author/address/phone">
+	<xsl:template match="/rfc/front/author/address/phone | section/author/address/phone">
 		<xsl:param name="sfx"/>
 		<xsl:text>:phone</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text>
 		<xsl:apply-templates />
 		<xsl:text>&#xa;</xsl:text>
 	</xsl:template>
 
-	<xsl:template match="/rfc/front/author/address/postal">
+	<xsl:template match="/rfc/front/author/address/postal | section/author/address/postal">
 		<xsl:param name="sfx"/>	
 		<xsl:variable name="postal">
 			<xsl:apply-templates select="street[1]">
@@ -522,7 +552,7 @@
 		</xsl:for-each>
 	</xsl:template>
 
-	<xsl:template match="/rfc/front/author/address/postal/street">
+	<xsl:template match="/rfc/front/author/address/postal/street | section/author/address/postal/street">
 		<xsl:param name="sfx"/>	
 		<!-- <xsl:text>:street</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
 		<item>
@@ -534,7 +564,7 @@
 		<!-- <xsl:text>&#xa;</xsl:text> -->
 	</xsl:template>
 
-	<xsl:template match="/rfc/front/author/address/postal/city">
+	<xsl:template match="/rfc/front/author/address/postal/city | section/author/address/postal/city">
 		<xsl:param name="sfx"/>	
 		<!-- <xsl:text>:city</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
 		<item>
@@ -546,7 +576,7 @@
 		<!-- <xsl:text>&#xa;</xsl:text> -->
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/address/postal/cityarea"> <!-- V3 -->
+	<xsl:template match="/rfc/front/author/address/postal/cityarea | section/author/address/postal/cityarea"> <!-- V3 -->
 		<xsl:param name="sfx"/>	
 		<item>
 			<xsl:for-each select="ancestor::postal/cityarea[normalize-space(text()) != '']">
@@ -556,7 +586,7 @@
 		</item>
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/address/postal/region">
+	<xsl:template match="/rfc/front/author/address/postal/region | section/author/address/postal/region">
 		<xsl:param name="sfx"/>	
 		<!-- <xsl:text>:region</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
 		<item>
@@ -568,7 +598,7 @@
 		<!-- <xsl:text>&#xa;</xsl:text> -->
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/address/postal/country">
+	<xsl:template match="/rfc/front/author/address/postal/country | section/author/address/postal/country">
 		<xsl:param name="sfx"/>	
 		<!-- <xsl:text>:country</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
 		<item>
@@ -580,7 +610,7 @@
 		<!-- <xsl:text>&#xa;</xsl:text> -->
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/address/postal/extaddr"> <!-- V3 -->
+	<xsl:template match="/rfc/front/author/address/postal/extaddr | section/address/postal/extaddr"> <!-- V3 -->
 		<xsl:param name="sfx"/>	
 		<item>
 			<xsl:for-each select="ancestor::postal/extaddr[normalize-space(text()) != '']">
@@ -590,7 +620,7 @@
 		</item>
 	</xsl:template>
 
-	<xsl:template match="/rfc/front/author/address/postal/pobox"> <!-- V3 -->
+	<xsl:template match="/rfc/front/author/address/postal/pobox | section/author/address/postal/pobox"> <!-- V3 -->
 		<xsl:param name="sfx"/>	
 		<item>
 			<xsl:for-each select="ancestor::postal/pobox[normalize-space(text()) != '']">
@@ -600,7 +630,7 @@
 		</item>
 	</xsl:template>
 
-	<xsl:template match="/rfc/front/author/address/postal/sortingcode"> <!-- V3 -->
+	<xsl:template match="/rfc/front/author/address/postal/sortingcode | section/author/address/postal/sortingcode"> <!-- V3 -->
 		<xsl:param name="sfx"/>	
 		<item>
 			<xsl:for-each select="ancestor::postal/sortingcode[normalize-space(text()) != '']">
@@ -610,7 +640,7 @@
 		</item>
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/address/postal/code">
+	<xsl:template match="/rfc/front/author/address/postal/code | section/author/address/postal/code">
 		<xsl:param name="sfx"/>	
 		<!-- <xsl:text>:code</xsl:text><xsl:value-of select="$sfx"/><xsl:text>: </xsl:text> --> <!-- V2 -->
 		<item>
@@ -622,7 +652,7 @@
 		<!-- <xsl:text>&#xa;</xsl:text> -->
 	</xsl:template>
 	
-	<xsl:template match="/rfc/front/author/address/postal/postalLine">
+	<xsl:template match="/rfc/front/author/address/postal/postalLine | section/author/address/postal/postalLine">
 		<xsl:param name="sfx"/>	
 		<item>
 			<xsl:for-each select="ancestor::postal/postalLine[normalize-space(text()) != '']">
@@ -770,6 +800,8 @@
 	<xsl:template match="section/@numbered">
 		<xsl:text>numbered=</xsl:text><xsl:value-of select="."/>
 	</xsl:template>
+
+	<xsl:template match="section[count(*) = count(name) + count(author)]" priority="2"/>
 
 	<!-- ================ -->
 	<!-- END Middle (Sections and Subsections) -->
@@ -1308,10 +1340,13 @@
 	</xsl:template>
 
 	<xsl:template match="eref">
-		<xsl:text> </xsl:text><xsl:value-of select="@target"/>
+		<xsl:text> </xsl:text>
+		<xsl:if test="@brackets = 'angle'"><xsl:text>&amp;lt;</xsl:text></xsl:if>
+		<xsl:value-of select="@target"/>
 		<xsl:if test="normalize-space(.) != ''">
 			<xsl:text>[</xsl:text><xsl:value-of select="."/><xsl:text>]</xsl:text>
 		</xsl:if>
+		<xsl:if test="@brackets = 'angle'"><xsl:text>&amp;gt;</xsl:text></xsl:if>
 	</xsl:template>
 
 	<xsl:template match="vspace">
@@ -1420,9 +1455,12 @@
 		<xsl:text>&#xa;</xsl:text>
 		<xsl:apply-templates select="@anchor"/>
 		<xsl:variable name="ul_settings">
-			<xsl:for-each select="@empty | @spacing">
-				<xsl:apply-templates select="."/>
-				<xsl:if test="position() != last()">,</xsl:if>
+			<xsl:for-each select="@empty | @spacing | @bare">
+				<xsl:variable name="item"><xsl:apply-templates select="."/></xsl:variable>
+				<xsl:if test="normalize-space($item) != ''">
+					<xsl:value-of select="$item"/>
+					<xsl:if test="position() != last()">,</xsl:if>
+				</xsl:if>
 			</xsl:for-each>
 		</xsl:variable>
 		<xsl:if test="$ul_settings != ''">
@@ -1437,6 +1475,12 @@
 	
 	<xsl:template match="ul/@spacing">
 		<xsl:text>spacing=</xsl:text><xsl:value-of select="."/>
+	</xsl:template>
+
+	<xsl:template match="ul/@bare">
+		<xsl:if test="not(../@empty)">
+			<xsl:text>nobullet=</xsl:text><xsl:value-of select="."/>
+		</xsl:if>
 	</xsl:template>
 	
 	
@@ -1920,8 +1964,13 @@
 	<!-- End of relref processing -->
 	<!-- ================ -->
 	
-	<xsl:template match="contact">
-		<xsl:value-of select="@fullname"/>
+	<xsl:template match="contact[not(parent::section)]">
+		<xsl:apply-templates select="@*"/>
+		<xsl:apply-templates />
+	</xsl:template>
+	
+	<xsl:template match="contact[not(parent::section)]/@*">
+		<xsl:value-of select="."/>
 	</xsl:template>
 	
 	<!-- ================ -->

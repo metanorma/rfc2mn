@@ -1,4 +1,4 @@
-package com.metanorma;
+package org.metanorma;
 
 import java.io.File;
 import org.apache.commons.cli.ParseException;

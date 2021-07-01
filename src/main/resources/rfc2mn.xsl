@@ -898,7 +898,7 @@
 		<xsl:variable name="normalized_text" select="normalize-space(.)"/>
 		<xsl:if test="preceding-sibling::* and ($firstchar = ' ' or $firstchar = '&#xa;' or $firstchar = '&#xd;') and $normalized_text != ''"><xsl:text> </xsl:text></xsl:if>
 		<!-- <xsl:value-of select="$normalized_text"/> -->
-		<xsl:value-of select="java:com.metanorma.RegExEscaping.escapeFormattingCommands($normalized_text)"/>
+		<xsl:value-of select="java:org.metanorma.RegExEscaping.escapeFormattingCommands($normalized_text)"/>
 		<xsl:if test="preceding-sibling::* and following-sibling::* and $normalized_text = '' and not($normalized_text = .)"><xsl:text> </xsl:text></xsl:if>
 		<xsl:if test="following-sibling::* and ($lastchar = ' ' or $lastchar = '&#xa;' or $lastchar = '&#xd;') and $normalized_text != ''"><xsl:text> </xsl:text></xsl:if>
 	</xsl:template>

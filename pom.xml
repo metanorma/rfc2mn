@@ -6,6 +6,7 @@
     <version>1.0</version>
     <name>XML2RFC to Metanorma Asciidoc IETF</name>
     <packaging>jar</packaging>
+    <url>https://www.metanorma.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>

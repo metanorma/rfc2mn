@@ -4,6 +4,8 @@ image:https://github.com/metanorma/rfc2mn/workflows/ubuntu/badge.svg["Build Stat
 image:https://github.com/metanorma/rfc2mn/workflows/macos/badge.svg["Build Status", link="https://github.com/metanorma/rfc2mn/actions?workflow=macos"]
 image:https://github.com/metanorma/rfc2mn/workflows/windows/badge.svg["Build Status", link="https://github.com/metanorma/rfc2mn/actions?workflow=windows"]
 
+THIS REPOSITORY IS ARCHIVED. Its functionality has been incorporated into https://github.com/metanorma/mnconvert
+
 == Installing Build Tools
 
 You will need the `maven` build tool and `make`.
